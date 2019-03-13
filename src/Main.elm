@@ -3,7 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (src)
-import Sketches.Sketch1
+import SketchManager
 
 
 
@@ -11,17 +11,16 @@ import Sketches.Sketch1
 
 
 type alias Model =
-    { sketch : Sketch }
-
-
-type Sketch
-    = NoSketch
-    | Sketch1Model Sketches.Sketch1.Model
+    { sketchModel : SketchManager.Model }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { sketch = NoSketch }, Cmd.none )
+    let
+        ( model, cmd ) =
+            SketchManager.init
+    in
+    ( { sketchModel = model }, Cmd.map SketchMsg cmd )
 
 
 
@@ -30,24 +29,21 @@ init =
 
 type Msg
     = NoOp
-    | Sketch1Msg Sketches.Sketch1.Msg
+    | SketchMsg SketchManager.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( msg, model.sketch ) of
-        ( NoOp, _ ) ->
+    case msg of
+        NoOp ->
             ( model, Cmd.none )
 
-        ( Sketch1Msg subMsg, Sketch1Model sketchModel ) ->
+        SketchMsg sketchMsg ->
             let
                 ( newSketchModel, newSketchCmd ) =
-                    Sketches.Sketch1.update subMsg sketchModel
+                    SketchManager.update sketchMsg model.sketchModel
             in
-            ( model, Cmd.map Sketch1Msg newSketchCmd )
-
-        ( Sketch1Msg subMsg, _ ) ->
-            ( model, Cmd.none )
+            ( { sketchModel = newSketchModel }, Cmd.map SketchMsg newSketchCmd )
 
 
 
@@ -59,6 +55,10 @@ view model =
     div []
         [ img [ src "/logo.svg" ] []
         , h1 [] [ text "Your Elm App is working!" ]
+        , div []
+            [ SketchManager.view model.sketchModel
+                |> Html.map SketchMsg
+            ]
         ]
 
 
@@ -72,5 +72,12 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
+
+

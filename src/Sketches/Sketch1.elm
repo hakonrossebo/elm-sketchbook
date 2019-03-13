@@ -1,4 +1,4 @@
-module Sketches.Sketch1 exposing (Model, Msg, init, update, view)
+module Sketches.Sketch1 exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html exposing (Html, h1, text)
 
