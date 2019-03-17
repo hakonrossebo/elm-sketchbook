@@ -1,9 +1,8 @@
-
-module SketchManager exposing (Model, Msg(..), init, update, view, subscriptions)
+module SketchManager exposing (Model, Msg(..), init, subscriptions, update, view)
 
 import Browser
 import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (class, src)
 import Sketches.Sketch1
 
 
@@ -23,10 +22,10 @@ type Sketch
 init : ( Model, Cmd Msg )
 init =
     let
-        (model, cmd) = Sketches.Sketch1.init
+        ( model, cmd ) =
+            Sketches.Sketch1.init
     in
-
-    ( {sketch = Sketch1Model model }, Cmd.none )
+    ( { sketch = Sketch1Model model }, Cmd.none )
 
 
 
@@ -55,21 +54,21 @@ update msg model =
             ( model, Cmd.none )
 
 
-
-
-
 view : Model -> Html Msg
 view model =
-    case model.sketch of
-        NoSketch ->
-            div [][h1[][text "no sketch selected"]]
-        Sketch1Model sketchModel ->
-             Sketches.Sketch1.view sketchModel
-             |> Html.map Sketch1Msg
+    div [ class "sketchArea"]
+        [ case model.sketch of
+            NoSketch ->
+                div [] [ h1 [] [ text "no sketch selected" ] ]
+
+            Sketch1Model sketchModel ->
+                Sketches.Sketch1.view sketchModel
+                    |> Html.map Sketch1Msg
+        ]
+
 
 
 ---- PROGRAM ----
-
 
 
 subscriptions : Model -> Sub Msg
@@ -77,5 +76,6 @@ subscriptions model =
     case model.sketch of
         Sketch1Model sketchModel ->
             Sub.map Sketch1Msg (Sketches.Sketch1.subscriptions sketchModel)
+
         NoSketch ->
             Sub.none

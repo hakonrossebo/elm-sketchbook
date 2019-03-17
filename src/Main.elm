@@ -2,7 +2,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (class, src)
 import SketchManager
 
 
@@ -52,13 +52,20 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
-        , div []
-            [ SketchManager.view model.sketchModel
-                |> Html.map SketchMsg
-            ]
+    div [ class "container" ]
+        [ -- img [ src "/logo.svg" ] []
+          div [ class "pageHeader" ] [ text "Header text" ]
+        , div [ class "mainNav" ] [ text "Nav text" ]
+
+        -- , h1 [] [ text "Your Elm App is working!" ]
+        -- , div []
+        -- [
+        , SketchManager.view model.sketchModel
+            |> Html.map SketchMsg
+        , div [ class "rightSideArea" ] [ text "Right side  text" ]
+        , div [ class "pageFooter" ] [ text "Footer  text" ]
+
+        -- ]
         ]
 
 
@@ -79,5 +86,3 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
-
-
