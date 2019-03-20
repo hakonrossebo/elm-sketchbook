@@ -1,6 +1,6 @@
 module SketchNavigation exposing (SketchItem(..), TreeToC, chapters, viewToC)
 
-import Html exposing (Html, div, h1, img, li, text, ul)
+import Html exposing (Html, div, h1, h2, h3, img, li, text, ul)
 import Html.Attributes exposing (class, src)
 
 
@@ -43,5 +43,5 @@ viewToC tree =
                     List.map viewToC items
             in
             ul []
-                [ li [] ([ text title ] ++ subChapters)
+                [ li [] ([ h3 [] [ text title ] ] ++ subChapters)
                 ]

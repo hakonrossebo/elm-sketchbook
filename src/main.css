@@ -58,7 +58,19 @@ img {
   }
 .mainNav {
   grid-area: nav;
+  text-align: left;
   }
 .rightSideArea {
   grid-area: rightside;
   }
+
+  ul {
+  list-style-type: none;
+  margin: 10px;
+  /* padding: 0; */
+  /* width: 60px; */
+} 
+
+li a {
+  display: block;
+}
