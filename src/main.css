@@ -10,10 +10,11 @@
 }
 
 body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
+    "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
   margin: 0;
   text-align: center;
-  color: #293c4b;
+  color: #aaaaaa;
 }
 
 h1 {
@@ -25,7 +26,6 @@ img {
   max-width: 200px;
 }
 
-
 .container {
   display: grid;
   grid-template-areas:
@@ -33,44 +33,51 @@ img {
     "nav sketch rightside"
     "footer footer footer";
   grid-template-rows: 60px 1fr 60px;
-  grid-template-columns: 20% 1fr 15%;
+  grid-template-columns: 10% 1fr 15%;
   grid-column-gap: 10px;
   grid-row-gap: 15px;
   grid-gap: 10px;
   height: 100vh;
   margin: 0;
-  background: darkgrey;
-  }
+  /* background: darkgrey; */
+  background: #293c4b;
+}
 /* header, footer, article, nav, div {
   padding: 20px;
   background: "#aaaaaa";
 } */
 .pageHeader {
   grid-area: header;
-  background: silver;
+  background: #293c4b;
+  text-align: left;
+  margin-left: 10px;
 }
 .pageFooter {
   grid-area: footer;
 }
 .sketchArea {
   grid-area: sketch;
-  background: black;
-  }
+  background: #010214;
+}
 .mainNav {
   grid-area: nav;
   text-align: left;
-  }
+}
 .rightSideArea {
   grid-area: rightside;
-  }
+}
 
-  ul {
+ul {
   list-style-type: none;
-  margin: 10px;
-  /* padding: 0; */
+  margin: 4px;
+  padding: 0;
   /* width: 60px; */
-} 
+}
 
 li a {
   display: block;
+}
+h3 {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }

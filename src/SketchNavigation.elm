@@ -14,21 +14,21 @@ type TreeToC
     | Chapter String (List TreeToC)
 
 
+chapters =
+    Chapter "Sketches"
+        [ Item "Sketch 1" SketchItem1
+        , Item "Sketch 2" SketchItem2
+        ]
+
+
 
 -- chapters =
---     Chapter "Main"
---         [ Item "Sketch item 1" SketchItem1
---         , Item "Sketch item 2" SketchItem2
+--     Chapter "Sketches"
+--         [ Chapter "Nested 1"
+--             [ Item "Sketch item 1" SketchItem1
+--             , Item "Sketch item 2" SketchItem2
+--             ]
 --         ]
-
-
-chapters =
-    Chapter "Main"
-        [ Chapter "Nested 1"
-            [ Item "Sketch item 1" SketchItem1
-            , Item "Sketch item 2" SketchItem2
-            ]
-        ]
 
 
 viewToC : TreeToC -> Html msg
@@ -43,5 +43,8 @@ viewToC tree =
                     List.map viewToC items
             in
             ul []
-                [ li [] ([ h3 [] [ text title ] ] ++ subChapters)
+                [ li []
+                    [ h3 [] [ text title ]
+                    ]
+                , ul [] subChapters
                 ]

@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, img, text)
+import Html exposing (Html, div, h1, h2, h3, h4, img, text)
 import Html.Attributes exposing (class, src)
 import SketchManager
 import SketchNavigation as Nav exposing (..)
@@ -55,7 +55,7 @@ view : Model -> Html Msg
 view model =
     div [ class "container" ]
         [ -- img [ src "/logo.svg" ] []
-          div [ class "pageHeader" ] [ text "Header text" ]
+          div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
 
         -- , div [ class "mainNav" ] [ text "Nav text" ]
         , div [ class "mainNav" ] [ Nav.viewToC Nav.chapters ]
