@@ -58,7 +58,11 @@ view model =
           div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
 
         -- , div [ class "mainNav" ] [ text "Nav text" ]
-        , div [ class "mainNav" ] [ Nav.viewToC Nav.chapters ]
+        -- , div [ class "mainNav" ] [ Nav.viewToC Nav.chapters ]
+        , div [ class "mainNav" ]
+            [ Nav.viewMenu Nav.menu
+            , Nav.viewMenu Nav.examplesMenu
+            ]
 
         -- , h1 [] [ text "Your Elm App is working!" ]
         -- , div []
