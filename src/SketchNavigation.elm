@@ -1,4 +1,4 @@
-module SketchNavigation exposing (SketchItem(..), TreeToC, chapters, examplesMenu, menu, viewMenu, viewToC)
+module SketchNavigation exposing (SketchItem(..), TreeToC, allMenus, chapters, examplesMenu, menu, viewMenu, viewMenus, viewToC)
 
 import Array
 import Html exposing (Html, div, h1, h2, h3, img, li, text, ul)
@@ -42,6 +42,15 @@ type MenuItem
     = MenuNode SketchMenuInfo (List MenuItem)
 
 
+type alias MenuItemList =
+    List MenuItem
+
+
+allMenus : MenuItemList
+allMenus =
+    [ menu, examplesMenu ]
+
+
 menu =
     MenuNode
         (SketchMenuContainer
@@ -77,9 +86,12 @@ getMenuContainerItemLength (MenuNode _ items) =
 -- Vise valgt item i meny
 
 
-viewMenus : List MenuItem -> Html msg
+viewMenus : MenuItemList -> Html msg
 viewMenus menuItems =
-    div [] []
+    div []
+        (menuItems
+            |> List.map viewMenu
+        )
 
 
 viewMenu : MenuItem -> Html msg

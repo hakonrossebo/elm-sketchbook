@@ -60,8 +60,10 @@ view model =
         -- , div [ class "mainNav" ] [ text "Nav text" ]
         -- , div [ class "mainNav" ] [ Nav.viewToC Nav.chapters ]
         , div [ class "mainNav" ]
-            [ Nav.viewMenu Nav.menu
-            , Nav.viewMenu Nav.examplesMenu
+            -- [ Nav.viewMenu Nav.menu
+            -- , Nav.viewMenu Nav.examplesMenu
+            -- ]
+            [ Nav.viewMenus allMenus
             ]
 
         -- , h1 [] [ text "Your Elm App is working!" ]
