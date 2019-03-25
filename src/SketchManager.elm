@@ -1,8 +1,12 @@
-module SketchManager exposing (Model, Msg(..), init, subscriptions, update, view)
+module SketchManager exposing (Model, Msg(..), init, loadCurrentSketch, subscriptions, update, view)
 
 import Browser
 import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (class, src)
+import SketchNavigation as Nav exposing (..)
+import Sketches.Example1 as Example1
+import Sketches.GettingStarted as GettingStarted
+import Sketches.NotFound as NotFound
 import Sketches.Sketch1 as Sketch1
 import Sketches.Sketch2 as Sketch2
 
@@ -19,6 +23,9 @@ type Sketch
     = NoSketch
     | Sketch1Model Sketch1.Model
     | Sketch2Model Sketch2.Model
+    | Example1Model Sketch1.Model
+    | GettingStartedModel GettingStarted.Model
+    | NotFoundModel NotFound.Model
 
 
 init : ( Model, Cmd Msg )
@@ -30,6 +37,24 @@ init =
     ( { sketch = Sketch1Model model }, Cmd.none )
 
 
+initGettingStarted : ( Model, Cmd Msg )
+initGettingStarted =
+    let
+        ( model, cmd ) =
+            GettingStarted.init
+    in
+    ( { sketch = GettingStartedModel model }, Cmd.none )
+
+
+initNotFound : ( Model, Cmd Msg )
+initNotFound =
+    let
+        ( model, cmd ) =
+            NotFound.init
+    in
+    ( { sketch = NotFoundModel model }, Cmd.none )
+
+
 
 ---- UPDATE ----
 
@@ -38,6 +63,29 @@ type Msg
     = NoOp
     | Sketch1Msg Sketch1.Msg
     | Sketch2Msg Sketch2.Msg
+    | Example1Msg Example1.Msg
+    | GettingStartedMsg GettingStarted.Msg
+    | NotFoundMsg NotFound.Msg
+
+
+loadCurrentSketch : Nav.Route -> ( Model, Cmd Msg )
+loadCurrentSketch route =
+    let
+        ( sketchModel, newCmd ) =
+            case route of
+                Nav.GettingStartedRoute ->
+                    initGettingStarted
+
+                Nav.SketchRoute sketchId ->
+                    init
+
+                Nav.ExampleRoute exampleId ->
+                    init
+
+                Nav.NotFoundRoute ->
+                    initNotFound
+    in
+    ( sketchModel, newCmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -60,10 +108,40 @@ update msg model =
             in
             ( model, Cmd.map Sketch2Msg newSketchCmd )
 
+        ( Example1Msg subMsg, Example1Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example1.update subMsg exampleModel
+            in
+            ( model, Cmd.map Example1Msg newExampleCmd )
+
+        ( GettingStartedMsg subMsg, GettingStartedModel gettingStartedModel ) ->
+            let
+                ( newGettingStartedModel, newGettingStartedCmd ) =
+                    GettingStarted.update subMsg gettingStartedModel
+            in
+            ( model, Cmd.map GettingStartedMsg newGettingStartedCmd )
+
+        ( NotFoundMsg subMsg, NotFoundModel notFoundModel ) ->
+            let
+                ( newNotFoundModel, newNotFoundCmd ) =
+                    NotFound.update subMsg notFoundModel
+            in
+            ( model, Cmd.map NotFoundMsg newNotFoundCmd )
+
         ( Sketch1Msg subMsg, _ ) ->
             ( model, Cmd.none )
 
         ( Sketch2Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example1Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( GettingStartedMsg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( NotFoundMsg subMsg, _ ) ->
             ( model, Cmd.none )
 
 
@@ -81,6 +159,18 @@ view model =
             Sketch2Model sketchModel ->
                 Sketch2.view sketchModel
                     |> Html.map Sketch2Msg
+
+            Example1Model exampleModel ->
+                Example1.view exampleModel
+                    |> Html.map Example1Msg
+
+            NotFoundModel notFoundModel ->
+                NotFound.view notFoundModel
+                    |> Html.map NotFoundMsg
+
+            GettingStartedModel gettingStartedModel ->
+                GettingStarted.view gettingStartedModel
+                    |> Html.map GettingStartedMsg
         ]
 
 
@@ -96,6 +186,15 @@ subscriptions model =
 
         Sketch2Model sketchModel ->
             Sub.map Sketch2Msg (Sketch2.subscriptions sketchModel)
+
+        Example1Model exampleModel ->
+            Sub.map Example1Msg (Example1.subscriptions exampleModel)
+
+        GettingStartedModel gettingStartedModel ->
+            Sub.map GettingStartedMsg (GettingStarted.subscriptions gettingStartedModel)
+
+        NotFoundModel notFoundModel ->
+            Sub.map NotFoundMsg (NotFound.subscriptions notFoundModel)
 
         NoSketch ->
             Sub.none

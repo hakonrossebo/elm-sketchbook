@@ -1,8 +1,10 @@
-module SketchNavigation exposing (SketchItem(..), TreeToC, allMenus, chapters, examplesMenu, menu, viewMenu, viewMenus, viewToC)
+module SketchNavigation exposing (Route(..), SketchItem(..), allMenus, examplesMenu, menu, parseUrl, viewMenu, viewMenus)
 
 import Array
-import Html exposing (Html, div, h1, h2, h3, img, li, text, ul)
+import Html exposing (Html, div, h1, h2, h3, h4, img, li, text, ul)
 import Html.Attributes exposing (class, src)
+import Url exposing (Url)
+import Url.Parser exposing (..)
 
 
 type SketchItem
@@ -10,20 +12,42 @@ type SketchItem
     | SketchItem2
 
 
-type TreeToC
-    = Item String SketchItem
-    | Chapter String (List TreeToC)
+type Route
+    = SketchRoute Int
+    | ExampleRoute Int
+    | GettingStartedRoute
+    | NotFoundRoute
 
 
-chapters =
-    Chapter "Sketches"
-        [ Item "Sketch 1" SketchItem1
-        , Item "Sketch 2" SketchItem2
-        , Item "Sketch 3" SketchItem2
+matchers : Parser (Route -> a) a
+matchers =
+    oneOf
+        [ map GettingStartedRoute top
+        , map SketchRoute (s "sketches" </> int)
+        , map ExampleRoute (s "examples" </> int)
         ]
 
 
+parseUrl : Url -> Route
+parseUrl url =
+    case parse matchers url of
+        Just route ->
+            route
 
+        Nothing ->
+            NotFoundRoute
+
+
+
+-- type TreeToC
+--     = Item String SketchItem
+--     | Chapter String (List TreeToC)
+-- chapters =
+--     Chapter "Sketches"
+--         [ Item "Sketch 1" SketchItem1
+--         , Item "Sketch 2" SketchItem2
+--         , Item "Sketch 3" SketchItem2
+--         ]
 -- chapters =
 --     Chapter "Sketches"
 --         [ Chapter "Nested 1"
@@ -94,14 +118,20 @@ viewMenus menuItems =
         )
 
 
+
+-- View links should send sketch or example id
+-- Need a count of sketches and examples - calculate from menu and examplesMenu?
+-- Need a mapping from type and id to route and id that are valid
+
+
 viewMenu : MenuItem -> Html msg
 viewMenu (MenuNode info items) =
+    let
+        subChapters =
+            List.map viewMenu items
+    in
     case info of
         SketchMenuContainer title ->
-            let
-                subChapters =
-                    List.map viewMenu items
-            in
             ul []
                 [ li []
                     [ h3 [] [ text title ]
@@ -110,32 +140,28 @@ viewMenu (MenuNode info items) =
                 ]
 
         SketchMenuItem title _ ->
-            let
-                subChapters =
-                    List.map viewMenu items
-            in
             ul []
                 [ li []
-                    [ h3 [] [ text title ]
+                    [ h4 [] [ text title ]
                     ]
                 , ul [] subChapters
                 ]
 
 
-viewToC : TreeToC -> Html msg
-viewToC tree =
-    case tree of
-        Item title item ->
-            li [] [ text title ]
 
-        Chapter title items ->
-            let
-                subChapters =
-                    List.map viewToC items
-            in
-            ul []
-                [ li []
-                    [ h3 [] [ text title ]
-                    ]
-                , ul [] subChapters
-                ]
+-- viewToC : TreeToC -> Html msg
+-- viewToC tree =
+--     case tree of
+--         Item title item ->
+--             li [] [ text title ]
+--         Chapter title items ->
+--             let
+--                 subChapters =
+--                     List.map viewToC items
+--             in
+--             ul []
+--                 [ li []
+--                     [ h3 [] [ text title ]
+--                     ]
+--                 , ul [] subChapters
+--                 ]

@@ -1,27 +1,44 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
-import Browser
+import Browser exposing (UrlRequest)
+import Browser.Navigation as Nav exposing (Key)
 import Html exposing (Html, div, h1, h2, h3, h4, img, text)
 import Html.Attributes exposing (class, src)
 import SketchManager
 import SketchNavigation as Nav exposing (..)
+import Url exposing (Url)
 
 
 
 ---- MODEL ----
 
 
+type alias Flags =
+    { api : String
+    }
+
+
 type alias Model =
-    { sketchModel : SketchManager.Model }
+    { flags : Flags
+    , navKey : Key
+    , route : Nav.Route
+    , sketchModel : SketchManager.Model
+    }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> Url -> Key -> ( Model, Cmd Msg )
+init flags url navKey =
     let
         ( model, cmd ) =
             SketchManager.init
     in
-    ( { sketchModel = model }, Cmd.map SketchMsg cmd )
+    ( { flags = flags
+      , navKey = navKey
+      , route = Nav.parseUrl url
+      , sketchModel = model
+      }
+    , Cmd.map SketchMsg cmd
+    )
 
 
 
@@ -31,6 +48,8 @@ init =
 type Msg
     = NoOp
     | SketchMsg SketchManager.Msg
+    | UrlChanged Url
+    | LinkClicked UrlRequest
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,15 +63,48 @@ update msg model =
                 ( newSketchModel, newSketchCmd ) =
                     SketchManager.update sketchMsg model.sketchModel
             in
-            ( { sketchModel = newSketchModel }, Cmd.map SketchMsg newSketchCmd )
+            ( { model | sketchModel = newSketchModel }, Cmd.map SketchMsg newSketchCmd )
+
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            let
+                newRoute =
+                    Nav.parseUrl url
+            in
+            ( { model | route = newRoute }
+            , Cmd.none
+            )
+
+
+loadCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+loadCurrentPage ( model, cmd ) =
+    let
+        ( sketchModel, newCmd ) =
+            SketchManager.loadCurrentSketch model.route
+    in
+    ( { model | sketchModel = sketchModel }, Cmd.batch [ cmd, Cmd.map SketchMsg newCmd ] )
 
 
 
 ---- VIEW ----
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
+    { title = "App"
+    , body = [ viewBody model ]
+    }
+
+
+viewBody : Model -> Html Msg
+viewBody model =
     div [ class "container" ]
         [ -- img [ src "/logo.svg" ] []
           div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
@@ -82,13 +134,15 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
-    Browser.element
-        { view = view
-        , init = \_ -> init
+    Browser.application
+        { init = init
+        , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = LinkClicked
+        , onUrlChange = UrlChanged
         }
 
 
