@@ -38,25 +38,6 @@ parseUrl url =
             NotFoundRoute
 
 
-
--- type TreeToC
---     = Item String SketchItem
---     | Chapter String (List TreeToC)
--- chapters =
---     Chapter "Sketches"
---         [ Item "Sketch 1" SketchItem1
---         , Item "Sketch 2" SketchItem2
---         , Item "Sketch 3" SketchItem2
---         ]
--- chapters =
---     Chapter "Sketches"
---         [ Chapter "Nested 1"
---             [ Item "Sketch item 1" SketchItem1
---             , Item "Sketch item 2" SketchItem2
---             ]
---         ]
-
-
 type SketchMenuInfo
     = SketchMenuContainer String
     | SketchMenuItem String Route
@@ -78,11 +59,12 @@ allMenus =
 menu =
     MenuNode
         (SketchMenuContainer
-            "Sketches M"
+            "Sketches"
         )
         [ MenuNode (SketchMenuItem "Sketch 1" (SketchRoute 1)) []
         , MenuNode (SketchMenuItem "Sketch 2" (SketchRoute 2)) []
-        , MenuNode (SketchMenuItem "Sketch 3" (SketchRoute 2)) []
+        , MenuNode (SketchMenuItem "Sketch 3" (SketchRoute 3)) []
+        , MenuNode (SketchMenuItem "Sketch 4" (SketchRoute 4)) []
         ]
 
 
@@ -92,8 +74,8 @@ examplesMenu =
             "Examples"
         )
         [ MenuNode (SketchMenuItem "Example 1" (ExampleRoute 1)) []
-        , MenuNode (SketchMenuItem "Example 2" (ExampleRoute 1)) []
-        , MenuNode (SketchMenuItem "Example 3" (ExampleRoute 1)) []
+        , MenuNode (SketchMenuItem "Example 2" (ExampleRoute 2)) []
+        , MenuNode (SketchMenuItem "Example 3" (ExampleRoute 3)) []
         ]
 
 
@@ -102,26 +84,12 @@ getMenuContainerItemLength (MenuNode _ items) =
     List.length items
 
 
-
--- starte med en posisjon som gir navn og item
--- skal kunne klikke på et meny item og sette item som current model
--- Bruke navigation med url?
--- Frem og tilbake knapp for å kunne navigere til neste?
--- Vise valgt item i meny
-
-
 viewMenus : MenuItemList -> Html msg
 viewMenus menuItems =
     div []
         (menuItems
             |> List.map viewMenu
         )
-
-
-
--- View links should send sketch or example id
--- Need a count of sketches and examples - calculate from menu and examplesMenu?
--- Need a mapping from type and id to route and id that are valid
 
 
 viewMenu : MenuItem -> Html msg
@@ -142,7 +110,6 @@ viewMenu (MenuNode info items) =
         SketchMenuItem title route ->
             ul []
                 [ li []
-                    -- [ h4 [] [ text title ]
                     [ h4 [] [ a [ href (pathFor route) ] [ text title ] ]
                     ]
                 , ul [] subChapters
@@ -163,22 +130,3 @@ pathFor route =
 
         NotFoundRoute ->
             "/notfound"
-
-
-
--- viewToC : TreeToC -> Html msg
--- viewToC tree =
---     case tree of
---         Item title item ->
---             li [] [ text title ]
---         Chapter title items ->
---             let
---                 subChapters =
---                     List.map viewToC items
---             in
---             ul []
---                 [ li []
---                     [ h3 [] [ text title ]
---                     ]
---                 , ul [] subChapters
---                 ]

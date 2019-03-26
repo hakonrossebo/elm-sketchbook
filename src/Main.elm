@@ -108,27 +108,14 @@ view model =
 viewBody : Model -> Html Msg
 viewBody model =
     div [ class "container" ]
-        [ -- img [ src "/logo.svg" ] []
-          div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
-
-        -- , div [ class "mainNav" ] [ text "Nav text" ]
-        -- , div [ class "mainNav" ] [ Nav.viewToC Nav.chapters ]
+        [ div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
         , div [ class "mainNav" ]
-            -- [ Nav.viewMenu Nav.menu
-            -- , Nav.viewMenu Nav.examplesMenu
-            -- ]
             [ Nav.viewMenus allMenus
             ]
-
-        -- , h1 [] [ text "Your Elm App is working!" ]
-        -- , div []
-        -- [
         , SketchManager.view model.sketchModel
             |> Html.map SketchMsg
         , div [ class "rightSideArea" ] [ text "Right side  text" ]
         , div [ class "pageFooter" ] [ text "Footer  text" ]
-
-        -- ]
         ]
 
 
