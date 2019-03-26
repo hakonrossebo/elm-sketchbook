@@ -32,9 +32,30 @@ init : ( Model, Cmd Msg )
 init =
     let
         ( model, cmd ) =
-            Sketch1.init
+            GettingStarted.init
     in
-    ( { sketch = Sketch1Model model }, Cmd.none )
+    ( { sketch = GettingStartedModel model }, Cmd.none )
+
+
+initSketch : Int -> ( Model, Cmd Msg )
+initSketch sketchId =
+    case sketchId of
+        1 ->
+            let
+                ( model, cmd ) =
+                    Sketch1.init
+            in
+            ( { sketch = Sketch1Model model }, Cmd.none )
+
+        2 ->
+            let
+                ( model, cmd ) =
+                    Sketch2.init
+            in
+            ( { sketch = Sketch2Model model }, Cmd.none )
+
+        _ ->
+            initNotFound
 
 
 initGettingStarted : ( Model, Cmd Msg )
@@ -77,7 +98,7 @@ loadCurrentSketch route =
                     initGettingStarted
 
                 Nav.SketchRoute sketchId ->
-                    init
+                    initSketch sketchId
 
                 Nav.ExampleRoute exampleId ->
                     init

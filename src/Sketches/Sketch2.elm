@@ -35,4 +35,4 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    h1 [] [ text "Test Sketch 1" ]
+    h1 [] [ text "Test Sketch 2" ]

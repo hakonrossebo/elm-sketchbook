@@ -39,6 +39,7 @@ init flags url navKey =
       }
     , Cmd.map SketchMsg cmd
     )
+        |> loadCurrentPage
 
 
 
@@ -81,6 +82,7 @@ update msg model =
             ( { model | route = newRoute }
             , Cmd.none
             )
+                |> loadCurrentPage
 
 
 loadCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
