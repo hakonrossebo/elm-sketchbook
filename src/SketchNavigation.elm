@@ -1,8 +1,8 @@
 module SketchNavigation exposing (Route(..), SketchItem(..), allMenus, examplesMenu, menu, parseUrl, viewMenu, viewMenus)
 
 import Array
-import Html exposing (Html, div, h1, h2, h3, h4, img, li, text, ul)
-import Html.Attributes exposing (class, src)
+import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
+import Html.Attributes exposing (class, href, src)
 import Url exposing (Url)
 import Url.Parser exposing (..)
 
@@ -59,7 +59,7 @@ parseUrl url =
 
 type SketchMenuInfo
     = SketchMenuContainer String
-    | SketchMenuItem String SketchItem
+    | SketchMenuItem String Route
 
 
 type MenuItem
@@ -80,9 +80,9 @@ menu =
         (SketchMenuContainer
             "Sketches M"
         )
-        [ MenuNode (SketchMenuItem "Sketch 1" SketchItem1) []
-        , MenuNode (SketchMenuItem "Sketch 2" SketchItem2) []
-        , MenuNode (SketchMenuItem "Sketch 3" SketchItem2) []
+        [ MenuNode (SketchMenuItem "Sketch 1" (SketchRoute 1)) []
+        , MenuNode (SketchMenuItem "Sketch 2" (SketchRoute 2)) []
+        , MenuNode (SketchMenuItem "Sketch 3" (SketchRoute 2)) []
         ]
 
 
@@ -91,9 +91,9 @@ examplesMenu =
         (SketchMenuContainer
             "Examples"
         )
-        [ MenuNode (SketchMenuItem "Example 1" SketchItem1) []
-        , MenuNode (SketchMenuItem "Example 2" SketchItem2) []
-        , MenuNode (SketchMenuItem "Example 3" SketchItem2) []
+        [ MenuNode (SketchMenuItem "Example 1" (ExampleRoute 1)) []
+        , MenuNode (SketchMenuItem "Example 2" (ExampleRoute 1)) []
+        , MenuNode (SketchMenuItem "Example 3" (ExampleRoute 1)) []
         ]
 
 
@@ -139,13 +139,30 @@ viewMenu (MenuNode info items) =
                 , ul [] subChapters
                 ]
 
-        SketchMenuItem title _ ->
+        SketchMenuItem title route ->
             ul []
                 [ li []
-                    [ h4 [] [ text title ]
+                    -- [ h4 [] [ text title ]
+                    [ h4 [] [ a [ href (pathFor route) ] [ text title ] ]
                     ]
                 , ul [] subChapters
                 ]
+
+
+pathFor : Route -> String
+pathFor route =
+    case route of
+        SketchRoute id ->
+            "/sketches/" ++ String.fromInt id
+
+        ExampleRoute id ->
+            "/examples/" ++ String.fromInt id
+
+        GettingStartedRoute ->
+            "/"
+
+        NotFoundRoute ->
+            "/notfound"
 
 
 

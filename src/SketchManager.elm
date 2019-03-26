@@ -37,22 +37,29 @@ init =
     ( { sketch = GettingStartedModel model }, Cmd.none )
 
 
+mapModel : (a -> Sketch) -> (b -> Msg) -> ( a, Cmd b ) -> ( Model, Cmd Msg )
+mapModel sketchModel sketchMsg ( model, msg ) =
+    ( { sketch = sketchModel model }, Cmd.map sketchMsg msg )
+
+
 initSketch : Int -> ( Model, Cmd Msg )
 initSketch sketchId =
     case sketchId of
         1 ->
-            let
-                ( model, cmd ) =
-                    Sketch1.init
-            in
-            ( { sketch = Sketch1Model model }, Cmd.none )
+            mapModel Sketch1Model Sketch1Msg Sketch1.init
 
         2 ->
-            let
-                ( model, cmd ) =
-                    Sketch2.init
-            in
-            ( { sketch = Sketch2Model model }, Cmd.none )
+            mapModel Sketch2Model Sketch2Msg Sketch2.init
+
+        _ ->
+            initNotFound
+
+
+initExample : Int -> ( Model, Cmd Msg )
+initExample id =
+    case id of
+        1 ->
+            mapModel Example1Model Example1Msg Example1.init
 
         _ ->
             initNotFound
@@ -101,7 +108,7 @@ loadCurrentSketch route =
                     initSketch sketchId
 
                 Nav.ExampleRoute exampleId ->
-                    init
+                    initExample exampleId
 
                 Nav.NotFoundRoute ->
                     initNotFound
