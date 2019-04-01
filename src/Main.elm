@@ -22,6 +22,8 @@ type alias Model =
     { flags : Flags
     , navKey : Key
     , route : Nav.Route
+    , nextRoute : Maybe Nav.Route
+    , previousRoute : Maybe Nav.Route
     , sketchModel : SketchManager.Model
     }
 
@@ -31,10 +33,21 @@ init flags url navKey =
     let
         ( model, cmd ) =
             SketchManager.init
+
+        route =
+            Nav.parseUrl url
+
+        nextRoute =
+            Nothing
+
+        previousRoute =
+            Nothing
     in
     ( { flags = flags
       , navKey = navKey
-      , route = Nav.parseUrl url
+      , route = route
+      , nextRoute = nextRoute
+      , previousRoute = previousRoute
       , sketchModel = model
       }
     , Cmd.map SketchMsg cmd

@@ -1,15 +1,10 @@
-module SketchNavigation exposing (Route(..), SketchItem(..), allMenus, examplesMenu, menu, parseUrl, viewMenu, viewMenus)
+module SketchNavigation exposing (Route(..), allMenus, examplesMenu, getNextItemInMenu, menu, parseUrl, viewMenu, viewMenus)
 
 import Array
 import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
 import Html.Attributes exposing (class, href, src)
 import Url exposing (Url)
 import Url.Parser exposing (..)
-
-
-type SketchItem
-    = SketchItem1
-    | SketchItem2
 
 
 type Route
@@ -44,7 +39,7 @@ type SketchMenuInfo
 
 
 type MenuItem
-    = MenuNode SketchMenuInfo (List MenuItem)
+    = MenuNode SketchMenuInfo MenuItemList
 
 
 type alias MenuItemList =
@@ -82,6 +77,55 @@ examplesMenu =
 getMenuContainerItemLength : MenuItem -> Int
 getMenuContainerItemLength (MenuNode _ items) =
     List.length items
+
+
+
+-- Keep model with current item in menu, or use current route?
+-- When a route is selected, calculate next and previous route
+-- Store a Maybe of next and previous route? Must also be calculated initially
+
+
+getNextItemInMenu : Route -> MenuItemList -> Maybe Route
+getNextItemInMenu currentItemId menuItemList =
+    let
+        currentItemContainer =
+            menuItemList
+                |> List.map (findCurrentMenuItemContainer currentItemId)
+                |> List.head
+                |> Maybe.withDefault Nothing
+
+        nextItem =
+            currentItemContainer
+                |> Maybe.map (\container -> findCurrentMenuItemContainer currentItemId)
+    in
+    Just (ExampleRoute 1)
+
+
+
+-- Steps
+-- Find the menuContainer of the current item by a recursive search
+-- In the parent menuItem, find next item in list
+
+
+findCurrentMenuItemContainer : Route -> MenuItem -> Maybe MenuItem
+findCurrentMenuItemContainer currentItemRoute (MenuNode sketchInfo items) =
+    let
+        currentItemRoutePath =
+            pathFor currentItemRoute
+    in
+    case sketchInfo of
+        SketchMenuContainer _ ->
+            items
+                |> List.map (findCurrentMenuItemContainer currentItemRoute)
+                |> List.head
+                |> Maybe.withDefault Nothing
+
+        SketchMenuItem title menuRoute ->
+            if pathFor menuRoute == currentItemRoutePath then
+                Just (MenuNode sketchInfo items)
+
+            else
+                Nothing
 
 
 viewMenus : MenuItemList -> Html msg
