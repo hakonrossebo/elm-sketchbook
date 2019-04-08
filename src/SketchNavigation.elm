@@ -128,6 +128,48 @@ findCurrentMenuItemContainer currentItemRoute (MenuNode sketchInfo items) =
                 Nothing
 
 
+findNextItemInContainer : Route -> MenuItem -> Maybe MenuItem
+findNextItemInContainer currentItemRoute (MenuNode sketchInfo items) =
+    let
+        currentItemRoutePath =
+            pathFor currentItemRoute
+    in
+    case sketchInfo of
+        SketchMenuContainer _ ->
+            items
+                |> List.filter isSketchMenuItem
+                -- |> List.map (findCurrentMenuItemContainer currentItemRoute)
+                |> List.head
+
+        -- |> Maybe.withDefault Nothing
+        SketchMenuItem _ _ ->
+            Nothing
+
+
+menuItemMatchesRoute : Route -> MenuItem -> Bool
+menuItemMatchesRoute route (MenuNode sketchInfo _) =
+    case sketchInfo of
+        SketchMenuContainer _ ->
+            False
+
+        SketchMenuItem _ itemRoute ->
+            if pathFor itemRoute == pathFor route then
+                True
+
+            else
+                False
+
+
+isSketchMenuItem : MenuItem -> Bool
+isSketchMenuItem (MenuNode sketchInfo _) =
+    case sketchInfo of
+        SketchMenuContainer _ ->
+            False
+
+        _ ->
+            True
+
+
 viewMenus : MenuItemList -> Html msg
 viewMenus menuItems =
     div []
