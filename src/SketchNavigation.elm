@@ -96,12 +96,14 @@ getNextItemInMenu currentItemId menuItemList =
 
         nextItem =
             currentItemContainer
-                |> Maybe.map (\container -> findCurrentMenuItemContainer currentItemId)
+                |> Maybe.andThen (\container -> findNextItemInContainer currentItemId container)
+                |> Maybe.andThen routeForMenuItem
     in
-    Just (ExampleRoute 1)
+    nextItem
 
 
 
+-- Just (ExampleRoute 1)
 -- Steps
 -- Find the menuContainer of the current item by a recursive search
 -- In the parent menuItem, find next item in list
@@ -133,14 +135,30 @@ findNextItemInContainer currentItemRoute (MenuNode sketchInfo items) =
     let
         currentItemRoutePath =
             pathFor currentItemRoute
+
+        nextItem list =
+            case list of
+                [] ->
+                    Nothing
+
+                [ x ] ->
+                    Nothing
+
+                x :: xnext :: xs ->
+                    if menuItemMatchesRoute currentItemRoute x then
+                        Just xnext
+
+                    else
+                        nextItem (xnext :: xs)
     in
     case sketchInfo of
         SketchMenuContainer _ ->
             items
                 |> List.filter isSketchMenuItem
-                -- |> List.map (findCurrentMenuItemContainer currentItemRoute)
-                |> List.head
+                |> nextItem
 
+        -- |> List.map (findCurrentMenuItemContainer currentItemRoute)
+        -- |> List.head
         -- |> Maybe.withDefault Nothing
         SketchMenuItem _ _ ->
             Nothing
@@ -168,6 +186,16 @@ isSketchMenuItem (MenuNode sketchInfo _) =
 
         _ ->
             True
+
+
+routeForMenuItem : MenuItem -> Maybe Route
+routeForMenuItem (MenuNode sketchInfo _) =
+    case sketchInfo of
+        SketchMenuItem _ route ->
+            Just route
+
+        _ ->
+            Nothing
 
 
 viewMenus : MenuItemList -> Html msg

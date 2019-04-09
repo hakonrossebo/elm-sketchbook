@@ -38,7 +38,7 @@ init flags url navKey =
             Nav.parseUrl url
 
         nextRoute =
-            Nothing
+            getNextItemInMenu route allMenus
 
         previousRoute =
             Nothing
