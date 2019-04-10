@@ -92,7 +92,7 @@ update msg model =
                 newRoute =
                     Nav.parseUrl url
             in
-            ( { model | route = newRoute }
+            ( { model | route = newRoute, nextRoute = getNextItemInMenu newRoute allMenus }
             , Cmd.none
             )
                 |> loadCurrentPage

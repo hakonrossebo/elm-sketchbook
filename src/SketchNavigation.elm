@@ -1,4 +1,4 @@
-module SketchNavigation exposing (Route(..), allMenus, examplesMenu, getNextItemInMenu, menu, parseUrl, viewMenu, viewMenus)
+module SketchNavigation exposing (Route(..), allMenus, examplesMenu, findCurrentMenuItemContainer, findNextItemInContainer, getNextItemInMenu, menu, parseUrl, viewMenu, viewMenus)
 
 import Array
 import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
@@ -91,9 +91,10 @@ getNextItemInMenu currentItemId menuItemList =
         currentItemContainer =
             menuItemList
                 |> List.map (findCurrentMenuItemContainer currentItemId)
+                |> List.filterMap identity
                 |> List.head
-                |> Maybe.withDefault Nothing
 
+        -- |> Maybe.withDefault Nothing
         nextItem =
             currentItemContainer
                 |> Maybe.andThen (\container -> findNextItemInContainer currentItemId container)
@@ -117,11 +118,17 @@ findCurrentMenuItemContainer currentItemRoute (MenuNode sketchInfo items) =
     in
     case sketchInfo of
         SketchMenuContainer _ ->
-            items
-                |> List.map (findCurrentMenuItemContainer currentItemRoute)
-                |> List.head
-                |> Maybe.withDefault Nothing
+            let
+                a =
+                    items
+                        |> List.map (findCurrentMenuItemContainer currentItemRoute)
+                        |> List.filterMap identity
+                        |> List.head
+            in
+            a
+                |> Maybe.andThen (\_ -> Just (MenuNode sketchInfo items))
 
+        -- |> Maybe.withDefault Nothing
         SketchMenuItem title menuRoute ->
             if pathFor menuRoute == currentItemRoutePath then
                 Just (MenuNode sketchInfo items)
