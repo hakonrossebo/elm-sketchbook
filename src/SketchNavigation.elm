@@ -1,4 +1,4 @@
-module SketchNavigation exposing (Route(..), allMenus, examplesMenu, findCurrentMenuItemContainer, findNextItemInContainer, getNextItemInMenu, menu, parseUrl, viewMenu, viewMenus)
+module SketchNavigation exposing (Route(..), allMenus, examplesMenu, getNextItemInMenu, getPreviousItemInMenu, menu, parseUrl, pathFor, viewMenu, viewMenus)
 
 import Array
 import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
@@ -56,7 +56,8 @@ menu =
         (SketchMenuContainer
             "Sketches"
         )
-        [ MenuNode (SketchMenuItem "Sketch 1" (SketchRoute 1)) []
+        [ MenuNode (SketchMenuItem "Getting started" GettingStartedRoute) []
+        , MenuNode (SketchMenuItem "Sketch 1" (SketchRoute 1)) []
         , MenuNode (SketchMenuItem "Sketch 2" (SketchRoute 2)) []
         , MenuNode (SketchMenuItem "Sketch 3" (SketchRoute 3)) []
         , MenuNode (SketchMenuItem "Sketch 4" (SketchRoute 4)) []
@@ -74,17 +75,6 @@ examplesMenu =
         ]
 
 
-getMenuContainerItemLength : MenuItem -> Int
-getMenuContainerItemLength (MenuNode _ items) =
-    List.length items
-
-
-
--- Keep model with current item in menu, or use current route?
--- When a route is selected, calculate next and previous route
--- Store a Maybe of next and previous route? Must also be calculated initially
-
-
 getNextItemInMenu : Route -> MenuItemList -> Maybe Route
 getNextItemInMenu currentItemId menuItemList =
     let
@@ -94,7 +84,6 @@ getNextItemInMenu currentItemId menuItemList =
                 |> List.filterMap identity
                 |> List.head
 
-        -- |> Maybe.withDefault Nothing
         nextItem =
             currentItemContainer
                 |> Maybe.andThen (\container -> findNextItemInContainer currentItemId container)
@@ -103,11 +92,21 @@ getNextItemInMenu currentItemId menuItemList =
     nextItem
 
 
+getPreviousItemInMenu : Route -> MenuItemList -> Maybe Route
+getPreviousItemInMenu currentItemId menuItemList =
+    let
+        currentItemContainer =
+            menuItemList
+                |> List.map (findCurrentMenuItemContainer currentItemId)
+                |> List.filterMap identity
+                |> List.head
 
--- Just (ExampleRoute 1)
--- Steps
--- Find the menuContainer of the current item by a recursive search
--- In the parent menuItem, find next item in list
+        nextItem =
+            currentItemContainer
+                |> Maybe.andThen (\container -> findPreviousItemInContainer currentItemId container)
+                |> Maybe.andThen routeForMenuItem
+    in
+    nextItem
 
 
 findCurrentMenuItemContainer : Route -> MenuItem -> Maybe MenuItem
@@ -118,17 +117,12 @@ findCurrentMenuItemContainer currentItemRoute (MenuNode sketchInfo items) =
     in
     case sketchInfo of
         SketchMenuContainer _ ->
-            let
-                a =
-                    items
-                        |> List.map (findCurrentMenuItemContainer currentItemRoute)
-                        |> List.filterMap identity
-                        |> List.head
-            in
-            a
+            items
+                |> List.map (findCurrentMenuItemContainer currentItemRoute)
+                |> List.filterMap identity
+                |> List.head
                 |> Maybe.andThen (\_ -> Just (MenuNode sketchInfo items))
 
-        -- |> Maybe.withDefault Nothing
         SketchMenuItem title menuRoute ->
             if pathFor menuRoute == currentItemRoutePath then
                 Just (MenuNode sketchInfo items)
@@ -164,9 +158,37 @@ findNextItemInContainer currentItemRoute (MenuNode sketchInfo items) =
                 |> List.filter isSketchMenuItem
                 |> nextItem
 
-        -- |> List.map (findCurrentMenuItemContainer currentItemRoute)
-        -- |> List.head
-        -- |> Maybe.withDefault Nothing
+        SketchMenuItem _ _ ->
+            Nothing
+
+
+findPreviousItemInContainer : Route -> MenuItem -> Maybe MenuItem
+findPreviousItemInContainer currentItemRoute (MenuNode sketchInfo items) =
+    let
+        currentItemRoutePath =
+            pathFor currentItemRoute
+
+        nextItem list =
+            case list |> List.reverse of
+                [] ->
+                    Nothing
+
+                [ x ] ->
+                    Nothing
+
+                x :: xnext :: xs ->
+                    if menuItemMatchesRoute currentItemRoute x then
+                        Just xnext
+
+                    else
+                        nextItem (xnext :: xs)
+    in
+    case sketchInfo of
+        SketchMenuContainer _ ->
+            items
+                |> List.filter isSketchMenuItem
+                |> nextItem
+
         SketchMenuItem _ _ ->
             Nothing
 

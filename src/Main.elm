@@ -2,8 +2,8 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav exposing (Key)
-import Html exposing (Html, div, h1, h2, h3, h4, img, text)
-import Html.Attributes exposing (class, src)
+import Html exposing (Html, a, div, h1, h2, h3, h4, img, span, text)
+import Html.Attributes exposing (class, href, src)
 import SketchManager
 import SketchNavigation as Nav exposing (..)
 import Url exposing (Url)
@@ -41,7 +41,7 @@ init flags url navKey =
             getNextItemInMenu route allMenus
 
         previousRoute =
-            Nothing
+            getPreviousItemInMenu route allMenus
     in
     ( { flags = flags
       , navKey = navKey
@@ -91,8 +91,14 @@ update msg model =
             let
                 newRoute =
                     Nav.parseUrl url
+
+                nextRoute =
+                    getNextItemInMenu newRoute allMenus
+
+                previousRoute =
+                    getPreviousItemInMenu newRoute allMenus
             in
-            ( { model | route = newRoute, nextRoute = getNextItemInMenu newRoute allMenus }
+            ( { model | route = newRoute, nextRoute = nextRoute, previousRoute = previousRoute }
             , Cmd.none
             )
                 |> loadCurrentPage
@@ -128,8 +134,41 @@ viewBody model =
         , SketchManager.view model.sketchModel
             |> Html.map SketchMsg
         , div [ class "rightSideArea" ] [ text "Right side  text" ]
-        , div [ class "pageFooter" ] [ text "Footer  text" ]
+        , viewFooter model
         ]
+
+
+viewFooter : Model -> Html Msg
+viewFooter model =
+    div [ class "pageFooter" ]
+        [ viewNavigateNext model
+        , viewNavigatePrevious model
+        , text "Footer  text 123"
+        ]
+
+
+viewNavigateNext : Model -> Html Msg
+viewNavigateNext model =
+    case model.nextRoute of
+        Just route ->
+            span []
+                [ h4 [] [ a [ href (Nav.pathFor route) ] [ text "Next" ] ]
+                ]
+
+        Nothing ->
+            text ""
+
+
+viewNavigatePrevious : Model -> Html Msg
+viewNavigatePrevious model =
+    case model.previousRoute of
+        Just route ->
+            span []
+                [ h4 [] [ a [ href (Nav.pathFor route) ] [ text "Previous" ] ]
+                ]
+
+        Nothing ->
+            text ""
 
 
 
