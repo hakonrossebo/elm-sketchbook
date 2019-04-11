@@ -141,9 +141,9 @@ viewBody model =
 viewFooter : Model -> Html Msg
 viewFooter model =
     div [ class "pageFooter" ]
-        [ viewNavigateNext model
-        , viewNavigatePrevious model
-        , text "Footer  text 123"
+        [ viewNavigatePrevious model
+        , text " - "
+        , viewNavigateNext model
         ]
 
 
@@ -152,7 +152,7 @@ viewNavigateNext model =
     case model.nextRoute of
         Just route ->
             span []
-                [ h4 [] [ a [ href (Nav.pathFor route) ] [ text "Next" ] ]
+                [ a [ href (Nav.pathFor route) ] [ text "Next" ]
                 ]
 
         Nothing ->
@@ -164,7 +164,7 @@ viewNavigatePrevious model =
     case model.previousRoute of
         Just route ->
             span []
-                [ h4 [] [ a [ href (Nav.pathFor route) ] [ text "Previous" ] ]
+                [ a [ href (Nav.pathFor route) ] [ text "Previous" ]
                 ]
 
         Nothing ->

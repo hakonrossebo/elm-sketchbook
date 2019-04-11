@@ -97,6 +97,7 @@ getPreviousItemInMenu currentItemId menuItemList =
     let
         currentItemContainer =
             menuItemList
+                |> List.reverse
                 |> List.map (findCurrentMenuItemContainer currentItemId)
                 |> List.filterMap identity
                 |> List.head
@@ -169,7 +170,7 @@ findPreviousItemInContainer currentItemRoute (MenuNode sketchInfo items) =
             pathFor currentItemRoute
 
         nextItem list =
-            case list |> List.reverse of
+            case list of
                 [] ->
                     Nothing
 
@@ -186,6 +187,7 @@ findPreviousItemInContainer currentItemRoute (MenuNode sketchInfo items) =
     case sketchInfo of
         SketchMenuContainer _ ->
             items
+                |> List.reverse
                 |> List.filter isSketchMenuItem
                 |> nextItem
 
