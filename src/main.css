@@ -54,6 +54,7 @@ img {
 }
 .pageFooter {
   grid-area: footer;
+  /* text-align: left; */
 }
 .sketchArea {
   grid-area: sketch;
@@ -89,4 +90,13 @@ a:link {
 a:visited {
   text-decoration: none;
   color: #aaaaaa;
+}
+
+.navbutton {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.disabled {
+  opacity: 0.2;
 }

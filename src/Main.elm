@@ -2,8 +2,8 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation as Nav exposing (Key)
-import Html exposing (Html, a, div, h1, h2, h3, h4, img, span, text)
-import Html.Attributes exposing (class, href, src)
+import Html exposing (Html, a, div, h1, h2, h3, h4, i, img, span, text)
+import Html.Attributes exposing (class, href, src, title)
 import SketchManager
 import SketchNavigation as Nav exposing (..)
 import Url exposing (Url)
@@ -142,7 +142,6 @@ viewFooter : Model -> Html Msg
 viewFooter model =
     div [ class "pageFooter" ]
         [ viewNavigatePrevious model
-        , text " - "
         , viewNavigateNext model
         ]
 
@@ -151,24 +150,28 @@ viewNavigateNext : Model -> Html Msg
 viewNavigateNext model =
     case model.nextRoute of
         Just route ->
-            span []
-                [ a [ href (Nav.pathFor route) ] [ text "Next" ]
+            span [ class "navbutton" ]
+                [ a [ href (Nav.pathFor route) ] [ i [ title "Next", class "fas fa-long-arrow-alt-right fa-2x" ] [] ]
                 ]
 
         Nothing ->
-            text ""
+            span [ class "navbutton disabled" ]
+                [ i [ class "fas fa-long-arrow-alt-right fa-2x" ] []
+                ]
 
 
 viewNavigatePrevious : Model -> Html Msg
 viewNavigatePrevious model =
     case model.previousRoute of
         Just route ->
-            span []
-                [ a [ href (Nav.pathFor route) ] [ text "Previous" ]
+            span [ class "navbutton" ]
+                [ a [ href (Nav.pathFor route) ] [ i [ title "Previous", class "fas fa-long-arrow-alt-left fa-2x" ] [] ]
                 ]
 
         Nothing ->
-            text ""
+            span [ class "navbutton disabled" ]
+                [ i [ class "fas fa-long-arrow-alt-left fa-2x" ] []
+                ]
 
 
 
