@@ -1,11 +1,13 @@
 module Sketches.Sketch1 exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html exposing (Html, h1, text)
+import Shared exposing (..)
 
 
 type alias Model =
-    { counter : Int
-    }
+    SharedModel
+        { counter : Int
+        }
 
 
 type Msg
@@ -14,7 +16,13 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { counter = 0 }, Cmd.none )
+    let
+        info =
+            { title = "Sketch 1 Title"
+            , markdown = "S1 markdown"
+            }
+    in
+    ( { counter = 0, info = info }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

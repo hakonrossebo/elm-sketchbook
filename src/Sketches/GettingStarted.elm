@@ -1,11 +1,13 @@
 module Sketches.GettingStarted exposing (Model, Msg, init, subscriptions, update, view)
 
 import Html exposing (Html, h1, text)
+import Shared exposing (..)
 
 
 type alias Model =
-    { counter : Int
-    }
+    SharedModel
+        { counter : Int
+        }
 
 
 type Msg
@@ -14,7 +16,13 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { counter = 0 }, Cmd.none )
+    let
+        info =
+            { title = "Getting started Title"
+            , markdown = "markdown"
+            }
+    in
+    ( { counter = 0, info = info }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

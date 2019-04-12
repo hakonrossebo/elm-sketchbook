@@ -133,7 +133,8 @@ viewBody model =
             ]
         , SketchManager.view model.sketchModel
             |> Html.map SketchMsg
-        , div [ class "rightSideArea" ] [ text "Right side  text" ]
+        , SketchManager.viewSketchInformation model.sketchModel
+            |> Html.map SketchMsg
         , viewFooter model
         ]
 

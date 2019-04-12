@@ -1,8 +1,9 @@
-module SketchManager exposing (Model, Msg(..), init, loadCurrentSketch, subscriptions, update, view)
+module SketchManager exposing (Model, Msg(..), init, loadCurrentSketch, subscriptions, update, view, viewSketchInformation)
 
 import Browser
-import Html exposing (Html, div, h1, img, text)
+import Html exposing (Html, div, h1, h2, img, text)
 import Html.Attributes exposing (class, src)
+import Shared exposing (..)
 import SketchNavigation as Nav exposing (..)
 import Sketches.Example1 as Example1
 import Sketches.Example2 as Example2
@@ -20,7 +21,10 @@ import Sketches.Sketch4 as Sketch4
 
 
 type alias Model =
-    { sketch : Sketch }
+    SharedModel
+        { sketch : Sketch
+        , info : CommonSketchInformation
+        }
 
 
 type Sketch
@@ -42,12 +46,12 @@ init =
         ( model, cmd ) =
             GettingStarted.init
     in
-    ( { sketch = GettingStartedModel model }, Cmd.none )
+    ( { sketch = GettingStartedModel model, info = model.info }, Cmd.none )
 
 
-mapModel : (a -> Sketch) -> (b -> Msg) -> ( a, Cmd b ) -> ( Model, Cmd Msg )
+mapModel : (SharedModel a -> Sketch) -> (b -> Msg) -> ( SharedModel a, Cmd b ) -> ( Model, Cmd Msg )
 mapModel sketchModel sketchMsg ( model, msg ) =
-    ( { sketch = sketchModel model }, Cmd.map sketchMsg msg )
+    ( { sketch = sketchModel model, info = model.info }, Cmd.map sketchMsg msg )
 
 
 initSketch : Int -> ( Model, Cmd Msg )
@@ -91,7 +95,7 @@ initGettingStarted =
         ( model, cmd ) =
             GettingStarted.init
     in
-    ( { sketch = GettingStartedModel model }, Cmd.none )
+    ( { sketch = GettingStartedModel model, info = model.info }, Cmd.none )
 
 
 initNotFound : ( Model, Cmd Msg )
@@ -100,7 +104,7 @@ initNotFound =
         ( model, cmd ) =
             NotFound.init
     in
-    ( { sketch = NotFoundModel model }, Cmd.none )
+    ( { sketch = NotFoundModel model, info = model.info }, Cmd.none )
 
 
 
@@ -279,6 +283,14 @@ view model =
             GettingStartedModel gettingStartedModel ->
                 GettingStarted.view gettingStartedModel
                     |> Html.map GettingStartedMsg
+        ]
+
+
+viewSketchInformation : Model -> Html Msg
+viewSketchInformation model =
+    div []
+        [ h2 [] [ text model.info.title ]
+        , text model.info.markdown
         ]
 
 
