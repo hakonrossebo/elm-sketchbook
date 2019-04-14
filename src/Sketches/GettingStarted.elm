@@ -19,7 +19,13 @@ init =
     let
         info =
             { title = "Getting started Title"
-            , markdown = "markdown"
+            , markdown = """
+# Heading
+
+1. Test1
+2. Test2
+
+"""
             }
     in
     ( { counter = 0, info = info }, Cmd.none )

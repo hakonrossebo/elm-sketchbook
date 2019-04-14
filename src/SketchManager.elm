@@ -3,6 +3,7 @@ module SketchManager exposing (Model, Msg(..), init, loadCurrentSketch, subscrip
 import Browser
 import Html exposing (Html, div, h1, h2, img, text)
 import Html.Attributes exposing (class, src)
+import Markdown exposing (..)
 import Shared exposing (..)
 import SketchNavigation as Nav exposing (..)
 import Sketches.Example1 as Example1
@@ -290,7 +291,7 @@ viewSketchInformation : Model -> Html Msg
 viewSketchInformation model =
     div []
         [ h2 [] [ text model.info.title ]
-        , text model.info.markdown
+        , toHtml [] model.info.markdown
         ]
 
 
