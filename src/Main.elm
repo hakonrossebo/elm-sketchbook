@@ -25,6 +25,7 @@ type alias Model =
     , nextRoute : Maybe Nav.Route
     , previousRoute : Maybe Nav.Route
     , sketchModel : SketchManager.Model
+    , sketchMenu : Nav.MenuItemList
     }
 
 
@@ -37,11 +38,14 @@ init flags url navKey =
         route =
             Nav.parseUrl url
 
+        menu =
+            Nav.allMenus
+
         nextRoute =
-            getNextItemInMenu route allMenus
+            getNextItemInMenu route menu
 
         previousRoute =
-            getPreviousItemInMenu route allMenus
+            getPreviousItemInMenu route menu
     in
     ( { flags = flags
       , navKey = navKey
@@ -49,6 +53,7 @@ init flags url navKey =
       , nextRoute = nextRoute
       , previousRoute = previousRoute
       , sketchModel = model
+      , sketchMenu = menu
       }
     , Cmd.map SketchMsg cmd
     )
@@ -93,10 +98,10 @@ update msg model =
                     Nav.parseUrl url
 
                 nextRoute =
-                    getNextItemInMenu newRoute allMenus
+                    getNextItemInMenu newRoute model.sketchMenu
 
                 previousRoute =
-                    getPreviousItemInMenu newRoute allMenus
+                    getPreviousItemInMenu newRoute model.sketchMenu
             in
             ( { model | route = newRoute, nextRoute = nextRoute, previousRoute = previousRoute }
             , Cmd.none
@@ -129,7 +134,7 @@ viewBody model =
     div [ class "container" ]
         [ div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
         , div [ class "mainNav" ]
-            [ Nav.viewMenus allMenus
+            [ Nav.viewMenus model.sketchMenu
             ]
         , SketchManager.view model.sketchModel
             |> Html.map SketchMsg

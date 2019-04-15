@@ -1,4 +1,4 @@
-module SketchNavigation exposing (Route(..), allMenus, examplesMenu, getNextItemInMenu, getPreviousItemInMenu, menu, parseUrl, pathFor, viewMenu, viewMenus)
+module SketchNavigation exposing (MenuItemList, Route(..), allMenus, examplesMenu, getNextItemInMenu, getPreviousItemInMenu, menu, parseUrl, pathFor, viewMenu, viewMenus)
 
 import Array
 import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
