@@ -32,7 +32,7 @@ type alias Model =
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags url navKey =
     let
-        ( model, cmd ) =
+        ( sketchModel, sketchCmd ) =
             SketchManager.init
 
         route =
@@ -52,10 +52,10 @@ init flags url navKey =
       , route = route
       , nextRoute = nextRoute
       , previousRoute = previousRoute
-      , sketchModel = model
+      , sketchModel = sketchModel
       , sketchMenu = menu
       }
-    , Cmd.map SketchMsg cmd
+    , Cmd.map SketchMsg sketchCmd
     )
         |> loadCurrentPage
 
