@@ -61,6 +61,7 @@ img {
 }
 .rightSideArea {
   grid-area: rightside;
+  text-align: left;
 }
 
 ul {
