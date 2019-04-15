@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser exposing (UrlRequest)
+import Browser.Events exposing (onAnimationFrameDelta)
 import Browser.Navigation as Nav exposing (Key)
 import Html exposing (Html, a, div, h1, h2, h3, h4, i, img, span, text)
 import Html.Attributes exposing (class, href, src, title)
@@ -26,6 +27,7 @@ type alias Model =
     , previousRoute : Maybe Nav.Route
     , sketchModel : SketchManager.Model
     , sketchMenu : Nav.MenuItemList
+    , fps : Int
     }
 
 
@@ -54,6 +56,7 @@ init flags url navKey =
       , previousRoute = previousRoute
       , sketchModel = sketchModel
       , sketchMenu = menu
+      , fps = 0
       }
     , Cmd.map SketchMsg sketchCmd
     )
@@ -69,6 +72,7 @@ type Msg
     | SketchMsg SketchManager.Msg
     | UrlChanged Url
     | LinkClicked UrlRequest
+    | OnAnimationFrameDelta Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -76,6 +80,25 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        OnAnimationFrameDelta diff ->
+            let
+                newFps =
+                    1000.0
+                        / diff
+                        |> round
+
+                avgFps =
+                    if newFps - 8 > model.fps then
+                        newFps
+
+                    else if newFps + 8 < model.fps then
+                        newFps
+
+                    else
+                        model.fps
+            in
+            ( { model | fps = avgFps }, Cmd.none )
 
         SketchMsg sketchMsg ->
             let
@@ -149,6 +172,8 @@ viewFooter model =
     div [ class "pageFooter" ]
         [ viewNavigatePrevious model
         , viewNavigateNext model
+        , text "FPS "
+        , String.fromInt model.fps |> text
         ]
 
 
@@ -198,4 +223,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
+    Sub.batch
+        [ onAnimationFrameDelta OnAnimationFrameDelta
+        , Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
+        ]
