@@ -124,7 +124,7 @@ loadCurrentPage ( model, cmd ) =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "App"
+    { title = "Elm Sketchbook"
     , body = [ viewBody model ]
     }
 
