@@ -1,7 +1,7 @@
 module SketchNavigation exposing (MenuItemList, Route(..), allMenus, examplesMenu, getNextItemInMenu, getPreviousItemInMenu, menu, parseUrl, pathFor, viewMenu, viewMenus)
 
 import Array
-import Html exposing (Html, a, div, h1, h2, h3, h4, img, li, text, ul)
+import Html exposing (Html, a, div, h1, h2, h3, h4, i, img, li, span, text, ul)
 import Html.Attributes exposing (class, href, src)
 import Url exposing (Url)
 import Url.Parser exposing (..)
@@ -202,11 +202,16 @@ menuItemMatchesRoute route (MenuNode sketchInfo _) =
             False
 
         SketchMenuItem _ itemRoute ->
-            if pathFor itemRoute == pathFor route then
-                True
+            isEqualRoutes itemRoute route
 
-            else
-                False
+
+isEqualRoutes : Route -> Route -> Bool
+isEqualRoutes route1 route2 =
+    if pathFor route1 == pathFor route2 then
+        True
+
+    else
+        False
 
 
 isSketchMenuItem : MenuItem -> Bool
@@ -229,19 +234,19 @@ routeForMenuItem (MenuNode sketchInfo _) =
             Nothing
 
 
-viewMenus : MenuItemList -> Html msg
-viewMenus menuItems =
+viewMenus : Route -> MenuItemList -> Html msg
+viewMenus selectedRoute menuItems =
     div []
         (menuItems
-            |> List.map viewMenu
+            |> List.map (viewMenu selectedRoute)
         )
 
 
-viewMenu : MenuItem -> Html msg
-viewMenu (MenuNode info items) =
+viewMenu : Route -> MenuItem -> Html msg
+viewMenu selectedRoute (MenuNode info items) =
     let
         subChapters =
-            List.map viewMenu items
+            List.map (viewMenu selectedRoute) items
     in
     case info of
         SketchMenuContainer title ->
@@ -253,10 +258,28 @@ viewMenu (MenuNode info items) =
                 ]
 
         SketchMenuItem title route ->
+            let
+                isSelectedClass =
+                    if isEqualRoutes selectedRoute route then
+                        "selected-menu-item"
+
+                    else
+                        "not-selected-menu-item"
+
+                wrapSelected innerHtml =
+                    if isEqualRoutes selectedRoute route then
+                        [ i [ class "selected-item fas fa-angle-right" ] [ innerHtml ] ]
+
+                    else
+                        [ innerHtml ]
+            in
             ul []
                 [ li []
-                    [ h4 [] [ a [ href (pathFor route) ] [ text title ] ]
-                    ]
+                    (span
+                        [ class "menuItem" ]
+                        [ a [ href (pathFor route), class isSelectedClass ] [ text title ] ]
+                        |> wrapSelected
+                    )
                 , ul [] subChapters
                 ]
 

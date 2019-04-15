@@ -134,7 +134,7 @@ viewBody model =
     div [ class "container" ]
         [ div [ class "pageHeader" ] [ h2 [] [ text "Elm Sketchbook" ] ]
         , div [ class "mainNav" ]
-            [ Nav.viewMenus model.sketchMenu
+            [ Nav.viewMenus model.route model.sketchMenu
             ]
         , SketchManager.view model.sketchModel
             |> Html.map SketchMsg

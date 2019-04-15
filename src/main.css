@@ -21,6 +21,7 @@ h1 {
   font-size: 30px;
 }
 
+
 img {
   margin: 20px 0;
   max-width: 200px;
@@ -39,13 +40,8 @@ img {
   grid-gap: 10px;
   height: 100vh;
   margin: 0;
-  /* background: darkgrey; */
   background: #293c4b;
 }
-/* header, footer, article, nav, div {
-  padding: 20px;
-  background: "#aaaaaa";
-} */
 .pageHeader {
   grid-area: header;
   background: #293c4b;
@@ -54,7 +50,6 @@ img {
 }
 .pageFooter {
   grid-area: footer;
-  /* text-align: left; */
 }
 .sketchArea {
   grid-area: sketch;
@@ -72,12 +67,22 @@ ul {
   list-style-type: none;
   margin: 4px;
   padding: 0;
-  /* width: 60px; */
 }
 
-li a {
-  display: block;
+
+.menuItem {
+  font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
+    "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
+.selected-menu-item {
+  padding-left: 5px;
+}
+.not-selected-menu-item {
+  padding-left: 1px;
+}
+
 h3, h4 {
   margin-top: 2px;
   margin-bottom: 2px;
