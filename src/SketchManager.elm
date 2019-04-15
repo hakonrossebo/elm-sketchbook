@@ -289,7 +289,7 @@ view model =
 
 viewSketchInformation : Model -> Html Msg
 viewSketchInformation model =
-    div []
+    div [ class "rightSideArea" ]
         [ h2 [] [ text model.info.title ]
         , toHtml [] model.info.markdown
         ]
