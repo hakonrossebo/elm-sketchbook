@@ -86,19 +86,8 @@ update msg model =
                 newFps =
                     1000.0
                         / diff
-                        |> round
-
-                avgFps =
-                    if newFps - 8 > model.fps then
-                        newFps
-
-                    else if newFps + 8 < model.fps then
-                        newFps
-
-                    else
-                        model.fps
             in
-            ( { model | fps = avgFps }, Cmd.none )
+            ( { model | fps = calculateAverageFps model.fps newFps }, Cmd.none )
 
         SketchMsg sketchMsg ->
             let
@@ -130,6 +119,21 @@ update msg model =
             , Cmd.none
             )
                 |> loadCurrentPage
+
+
+calculateAverageFps : Int -> Float -> Int
+calculateAverageFps old new =
+    let
+        smoothing =
+            0.95
+
+        floatOld =
+            toFloat old
+
+        avg =
+            (floatOld * smoothing) + (new * (1.0 - smoothing))
+    in
+    round avg
 
 
 loadCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
