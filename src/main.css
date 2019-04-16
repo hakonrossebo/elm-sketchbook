@@ -32,9 +32,9 @@ img {
   grid-template-areas:
     "header header header"
     "nav sketch rightside"
-    "footer footer footer";
+    "nav footer rightside";
   grid-template-rows: 60px 1fr 60px;
-  grid-template-columns: 15% 1fr 15%;
+  grid-template-columns: 15% 1fr 20%;
   grid-column-gap: 10px;
   grid-row-gap: 15px;
   grid-gap: 10px;
@@ -50,6 +50,7 @@ img {
 }
 .pageFooter {
   grid-area: footer;
+  text-align: left;
 }
 .sketchArea {
   grid-area: sketch;
@@ -61,6 +62,7 @@ img {
 }
 .rightSideArea {
   grid-area: rightside;
+  overflow: hidden;
   text-align: left;
 }
 
@@ -70,6 +72,13 @@ ul {
   padding: 0;
 }
 
+.footerContainer {
+  display: flex;
+  justify-content: space-between;
+}
+.footerItem {
+  flex-basis: 100px;
+}
 
 .menuItem {
   font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
@@ -105,4 +114,8 @@ a:visited {
 
 .disabled {
   opacity: 0.2;
+}
+
+.mainContent {
+  text-align: left;
 }

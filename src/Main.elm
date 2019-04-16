@@ -174,10 +174,17 @@ viewBody model =
 viewFooter : Model -> Html Msg
 viewFooter model =
     div [ class "pageFooter" ]
-        [ viewNavigatePrevious model
-        , viewNavigateNext model
-        , text "FPS "
-        , String.fromInt model.fps |> text
+        [ div [ class "footerContainer" ]
+            [ span [ class "footerItem" ]
+                [ viewNavigatePrevious model
+                , viewNavigateNext model
+                ]
+            , span
+                [ class "footerItem" ]
+                [ String.fromInt model.fps |> text
+                , text " FPS"
+                ]
+            ]
         ]
 
 
