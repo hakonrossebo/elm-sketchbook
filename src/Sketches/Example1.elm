@@ -1,5 +1,6 @@
 module Sketches.Example1 exposing (Model, Msg, init, subscriptions, update, view)
 
+import Browser.Events exposing (onAnimationFrameDelta)
 import Html exposing (Html, h1, text)
 import Shared exposing (..)
 
@@ -12,6 +13,7 @@ type alias Model =
 
 type Msg
     = NoOp
+    | OnAnimationFrameDelta Float
 
 
 init : ( Model, Cmd Msg )
@@ -29,18 +31,19 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
-            ( { model | counter = 0 }, Cmd.none )
+            ( model, Cmd.none )
 
-
-add2 a b =
-    a + b
+        OnAnimationFrameDelta diff ->
+            ( { model | counter = round diff }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ onAnimationFrameDelta OnAnimationFrameDelta
+        ]
 
 
 view : Model -> Html Msg
 view model =
-    h1 [] [ text "Test Example 1" ]
+    h1 [] [ text <| String.fromInt model.counter ]
