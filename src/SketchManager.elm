@@ -156,63 +156,63 @@ update msg model =
                 ( newSketchModel, newSketchCmd ) =
                     Sketch1.update subMsg sketchModel
             in
-            ( model, Cmd.map Sketch1Msg newSketchCmd )
+            ( { model | sketch = Sketch1Model newSketchModel }, Cmd.map Sketch1Msg newSketchCmd )
 
         ( Sketch2Msg subMsg, Sketch2Model sketchModel ) ->
             let
                 ( newSketchModel, newSketchCmd ) =
                     Sketch2.update subMsg sketchModel
             in
-            ( model, Cmd.map Sketch2Msg newSketchCmd )
+            ( { model | sketch = Sketch2Model newSketchModel }, Cmd.map Sketch2Msg newSketchCmd )
 
         ( Sketch3Msg subMsg, Sketch3Model sketchModel ) ->
             let
                 ( newSketchModel, newSketchCmd ) =
                     Sketch3.update subMsg sketchModel
             in
-            ( model, Cmd.map Sketch3Msg newSketchCmd )
+            ( { model | sketch = Sketch3Model newSketchModel }, Cmd.map Sketch3Msg newSketchCmd )
 
         ( Sketch4Msg subMsg, Sketch4Model sketchModel ) ->
             let
                 ( newSketchModel, newSketchCmd ) =
                     Sketch4.update subMsg sketchModel
             in
-            ( model, Cmd.map Sketch4Msg newSketchCmd )
+            ( { model | sketch = Sketch4Model newSketchModel }, Cmd.map Sketch4Msg newSketchCmd )
 
         ( Example1Msg subMsg, Example1Model exampleModel ) ->
             let
                 ( newExampleModel, newExampleCmd ) =
                     Example1.update subMsg exampleModel
             in
-            ( model, Cmd.map Example1Msg newExampleCmd )
+            ( { model | sketch = Example1Model newExampleModel }, Cmd.map Example1Msg newExampleCmd )
 
         ( Example2Msg subMsg, Example2Model exampleModel ) ->
             let
                 ( newExampleModel, newExampleCmd ) =
                     Example2.update subMsg exampleModel
             in
-            ( model, Cmd.map Example2Msg newExampleCmd )
+            ( { model | sketch = Example2Model newExampleModel }, Cmd.map Example2Msg newExampleCmd )
 
         ( Example3Msg subMsg, Example3Model exampleModel ) ->
             let
                 ( newExampleModel, newExampleCmd ) =
                     Example3.update subMsg exampleModel
             in
-            ( model, Cmd.map Example3Msg newExampleCmd )
+            ( { model | sketch = Example3Model newExampleModel }, Cmd.map Example3Msg newExampleCmd )
 
         ( GettingStartedMsg subMsg, GettingStartedModel gettingStartedModel ) ->
             let
                 ( newGettingStartedModel, newGettingStartedCmd ) =
                     GettingStarted.update subMsg gettingStartedModel
             in
-            ( model, Cmd.map GettingStartedMsg newGettingStartedCmd )
+            ( { model | sketch = GettingStartedModel newGettingStartedModel }, Cmd.map GettingStartedMsg newGettingStartedCmd )
 
         ( NotFoundMsg subMsg, NotFoundModel notFoundModel ) ->
             let
                 ( newNotFoundModel, newNotFoundCmd ) =
                     NotFound.update subMsg notFoundModel
             in
-            ( model, Cmd.map NotFoundMsg newNotFoundCmd )
+            ( { model | sketch = NotFoundModel notFoundModel }, Cmd.map NotFoundMsg newNotFoundCmd )
 
         ( Sketch1Msg subMsg, _ ) ->
             ( model, Cmd.none )
