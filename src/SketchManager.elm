@@ -2,7 +2,7 @@ module SketchManager exposing (Model, Msg(..), init, loadCurrentSketch, subscrip
 
 import Browser
 import Html exposing (Html, div, h1, h2, img, text)
-import Html.Attributes exposing (class, src)
+import Html.Attributes exposing (class, id, src)
 import Markdown exposing (..)
 import Shared exposing (..)
 import SketchNavigation as Nav exposing (..)
@@ -34,9 +34,9 @@ type Sketch
     | Sketch2Model Sketch2.Model
     | Sketch3Model Sketch3.Model
     | Sketch4Model Sketch4.Model
-    | Example1Model Sketch1.Model
-    | Example2Model Sketch2.Model
-    | Example3Model Sketch3.Model
+    | Example1Model Example1.Model
+    | Example2Model Example2.Model
+    | Example3Model Example3.Model
     | GettingStartedModel GettingStarted.Model
     | NotFoundModel NotFound.Model
 
@@ -244,7 +244,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "sketchArea" ]
+    div [ class "sketchArea", id "sketch-content" ]
         [ case model.sketch of
             NoSketch ->
                 div [] [ h1 [] [ text "no sketch selected" ] ]
