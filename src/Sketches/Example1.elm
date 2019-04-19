@@ -6,6 +6,8 @@ import Html exposing (Html, div, h1, span, text)
 import Html.Attributes exposing (class, id)
 import Json.Decode as Decode
 import Shared exposing (..)
+import Svg exposing (circle, svg)
+import Svg.Attributes exposing (cx, cy, fill, height, r, viewBox, width)
 import Task
 
 
@@ -15,6 +17,7 @@ type alias Model =
         , position : Position
         , element : Maybe Dom.Element
         , error : Maybe String
+        , mouseTrail : List Position
         }
 
 
@@ -46,6 +49,7 @@ init =
       , position = { x = 0, y = 0 }
       , element = Nothing
       , error = Nothing
+      , mouseTrail = []
       }
     , getPosition
     )
@@ -75,7 +79,11 @@ update msg model =
             ( model, Cmd.none )
 
         OnAnimationFrameDelta diff ->
-            ( { model | counter = round diff }, Cmd.none )
+            let
+                trail =
+                    addPositionToTrail model
+            in
+            ( { model | counter = round diff, mouseTrail = trail }, Cmd.none )
 
         OnMouseMove x y ->
             ( { model | position = { x = x, y = y } }, Cmd.none )
@@ -88,6 +96,26 @@ update msg model =
 
         OnWindowResize x y ->
             ( model, getPosition )
+
+
+addPositionToTrail : Model -> List Position
+addPositionToTrail model =
+    case model.element of
+        Just element ->
+            if (model.position.x >= element.element.x && model.position.x <= element.element.x + element.element.width) && (model.position.y >= element.element.y && model.position.y <= element.element.y + element.element.height) then
+                let
+                    translatePosition x y position =
+                        { x = position.x - x, y = position.y - y - 40 }
+                in
+                translatePosition element.element.x element.element.y model.position
+                    :: model.mouseTrail
+                    |> List.take 20
+
+            else
+                []
+
+        Nothing ->
+            []
 
 
 subscriptions : Model -> Sub Msg
@@ -114,9 +142,7 @@ view model =
         Nothing ->
             div [ class "sketch-default-container", id "sketch-content" ]
                 [ div [ class "sketch-default-top-item" ] [ text "Mouse - Keyboard and Window management" ]
-                , div [ class "sketch-default-main-item" ] [ text "main item" ]
-
-                -- , div [ class "sketch-default-footer-item" ] [ text "footer item" ]
+                , viewMouseTrail model
                 , viewMousePosition model
                 ]
 
@@ -125,6 +151,58 @@ view model =
             div [ class "sketch-default-container", id "sketch-content" ]
                 [ viewError error
                 ]
+
+
+viewMouseTrail : Model -> Html Msg
+viewMouseTrail model =
+    case model.element of
+        Just element ->
+            let
+                windowWidth =
+                    element.element.width
+                        |> round
+                        |> String.fromInt
+
+                windowHeight =
+                    element.element.height
+                        |> round
+                        |> (\n -> n - 80)
+                        |> String.fromInt
+
+                viewBoxInfo =
+                    "0 0 " ++ windowWidth ++ " " ++ windowHeight
+            in
+            div [ class "sketch-default-main-item" ]
+                [ svg
+                    [ width windowWidth
+                    , height windowHeight
+                    , viewBox viewBoxInfo
+                    ]
+                    -- [ circle [ cx "30", cy "50", r "5", fill "blue" ] []
+                    -- ]
+                    (model.mouseTrail
+                        |> List.map viewTrailItem
+                    )
+                ]
+
+        Nothing ->
+            div [ class "sketch-default-main-item" ]
+                [ text "Window not ready"
+                ]
+
+
+viewTrailItem : Position -> Html Msg
+viewTrailItem position =
+    let
+        pX =
+            position.x
+                |> String.fromFloat
+
+        pY =
+            position.y
+                |> String.fromFloat
+    in
+    circle [ cx pX, cy pY, r "10", fill "blue" ] []
 
 
 viewValid : Model -> Html Msg
