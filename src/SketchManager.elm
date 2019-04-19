@@ -244,7 +244,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "sketchArea", id "sketch-content" ]
+    div [ class "sketchArea" ]
         [ case model.sketch of
             NoSketch ->
                 div [] [ h1 [] [ text "no sketch selected" ] ]

@@ -2,8 +2,8 @@ module Sketches.Example1 exposing (Model, Msg, init, subscriptions, update, view
 
 import Browser.Dom as Dom
 import Browser.Events exposing (onAnimationFrameDelta, onMouseMove, onResize)
-import Html exposing (Html, div, h1, text)
-import Html.Attributes exposing (id)
+import Html exposing (Html, div, h1, span, text)
+import Html.Attributes exposing (class, id)
 import Json.Decode as Decode
 import Shared exposing (..)
 import Task
@@ -110,14 +110,21 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ case model.error of
-            Nothing ->
-                viewValid model
+    case model.error of
+        Nothing ->
+            div [ class "sketch-default-container", id "sketch-content" ]
+                [ div [ class "sketch-default-top-item" ] [ text "Mouse - Keyboard and Window management" ]
+                , div [ class "sketch-default-main-item" ] [ text "main item" ]
 
-            Just error ->
-                viewError error
-        ]
+                -- , div [ class "sketch-default-footer-item" ] [ text "footer item" ]
+                , viewMousePosition model
+                ]
+
+        -- viewValid model
+        Just error ->
+            div [ class "sketch-default-container", id "sketch-content" ]
+                [ viewError error
+                ]
 
 
 viewValid : Model -> Html Msg
@@ -139,26 +146,36 @@ viewMousePosition model =
     case model.element of
         Just element ->
             let
-                elementX =
-                    model.position.x - element.element.x
+                mouseX =
+                    model.position.x
+                        -- - element.element.x
+                        |> String.fromFloat
+                        |> (\n -> "Mouse X: " ++ n)
 
-                elementY =
-                    model.position.y - element.element.y
+                mouseY =
+                    model.position.y
+                        -- - element.element.y
+                        |> String.fromFloat
+                        |> (\n -> "Mouse Y: " ++ n)
 
-                eW =
+                windowWidth =
                     element.element.width
+                        |> String.fromFloat
+                        |> (\n -> "Window width: " ++ n)
 
-                eH =
+                windowHeight =
                     element.element.height
+                        |> String.fromFloat
+                        |> (\n -> "Window height: " ++ n)
             in
-            div []
-                [ h1 [] [ text <| String.fromFloat elementX ]
-                , h1 [] [ text <| String.fromFloat elementY ]
-                , h1 [] [ text <| String.fromFloat eW ]
-                , h1 [] [ text <| String.fromFloat eH ]
+            div [ class "sketch-default-footer-item" ]
+                [ span [] [ text mouseX ]
+                , span [] [ text mouseY ]
+                , span [] [ text windowWidth ]
+                , span [] [ text windowHeight ]
                 ]
 
         Nothing ->
-            div []
+            div [ class "sketch-default-footer-item" ]
                 [ h1 [] [ text "Element position not ready" ]
                 ]
