@@ -13,7 +13,7 @@ import Task
 
 type alias Model =
     SharedModel
-        { counter : Int
+        { mouseTrailItemLength : Int
         , position : Position
         , element : Maybe Dom.Element
         , error : Maybe String
@@ -40,12 +40,16 @@ init : ( Model, Cmd Msg )
 init =
     let
         info =
-            { title = "E1 Title"
-            , markdown = "E1 markdown"
+            { title = "Example 1 - Mouse trail"
+            , markdown = """
+Move the mouse around in the window to play with the mouse trail.
+
+The window position and size is also tracked by using Browser.Events
+            """
             }
     in
     ( { info = info
-      , counter = 0
+      , mouseTrailItemLength = 20
       , position = { x = 0, y = 0 }
       , element = Nothing
       , error = Nothing
@@ -68,7 +72,7 @@ getPosition =
                         Dom.NotFound errorInfo ->
                             OnError errorInfo
     in
-    Dom.getElement "sketch-content"
+    Dom.getElement "sketch-drawing-area"
         |> Task.attempt processElement
 
 
@@ -83,7 +87,7 @@ update msg model =
                 trail =
                     addPositionToTrail model
             in
-            ( { model | counter = round diff, mouseTrail = trail }, Cmd.none )
+            ( { model | mouseTrail = trail }, Cmd.none )
 
         OnMouseMove x y ->
             ( { model | position = { x = x, y = y } }, Cmd.none )
@@ -105,11 +109,11 @@ addPositionToTrail model =
             if (model.position.x >= element.element.x && model.position.x <= element.element.x + element.element.width) && (model.position.y >= element.element.y && model.position.y <= element.element.y + element.element.height) then
                 let
                     translatePosition x y position =
-                        { x = position.x - x, y = position.y - y - 40 }
+                        { x = position.x - x, y = position.y - y }
                 in
                 translatePosition element.element.x element.element.y model.position
                     :: model.mouseTrail
-                    |> List.take 20
+                    |> List.take model.mouseTrailItemLength
 
             else
                 []
@@ -140,55 +144,51 @@ view : Model -> Html Msg
 view model =
     case model.error of
         Nothing ->
-            div [ class "sketch-default-container", id "sketch-content" ]
+            div [ class "sketch-default-container" ]
                 [ div [ class "sketch-default-top-item" ] [ text "Mouse - Keyboard and Window management" ]
                 , viewMouseTrail model
                 , viewMousePosition model
                 ]
 
-        -- viewValid model
         Just error ->
-            div [ class "sketch-default-container", id "sketch-content" ]
+            div [ class "sketch-default-container" ]
                 [ viewError error
                 ]
 
 
 viewMouseTrail : Model -> Html Msg
 viewMouseTrail model =
-    case model.element of
-        Just element ->
-            let
-                windowWidth =
-                    element.element.width
-                        |> round
-                        |> String.fromInt
+    div [ class "sketch-default-main-item", id "sketch-drawing-area" ]
+        (case model.element of
+            Just element ->
+                let
+                    windowWidth =
+                        element.element.width
+                            |> round
+                            |> String.fromInt
 
-                windowHeight =
-                    element.element.height
-                        |> round
-                        |> (\n -> n - 80)
-                        |> String.fromInt
+                    windowHeight =
+                        element.element.height
+                            |> round
+                            |> String.fromInt
 
-                viewBoxInfo =
-                    "0 0 " ++ windowWidth ++ " " ++ windowHeight
-            in
-            div [ class "sketch-default-main-item" ]
+                    viewBoxInfo =
+                        "0 0 " ++ windowWidth ++ " " ++ windowHeight
+                in
                 [ svg
                     [ width windowWidth
                     , height windowHeight
                     , viewBox viewBoxInfo
                     ]
-                    -- [ circle [ cx "30", cy "50", r "5", fill "blue" ] []
-                    -- ]
                     (model.mouseTrail
                         |> List.map viewTrailItem
                     )
                 ]
 
-        Nothing ->
-            div [ class "sketch-default-main-item" ]
-                [ text "Window not ready"
+            Nothing ->
+                [ text "Drawing area not ready"
                 ]
+        )
 
 
 viewTrailItem : Position -> Html Msg
@@ -226,24 +226,26 @@ viewMousePosition model =
             let
                 mouseX =
                     model.position.x
-                        -- - element.element.x
-                        |> String.fromFloat
+                        |> round
+                        |> String.fromInt
                         |> (\n -> "Mouse X: " ++ n)
 
                 mouseY =
                     model.position.y
-                        -- - element.element.y
-                        |> String.fromFloat
+                        |> round
+                        |> String.fromInt
                         |> (\n -> "Mouse Y: " ++ n)
 
                 windowWidth =
                     element.element.width
-                        |> String.fromFloat
+                        |> round
+                        |> String.fromInt
                         |> (\n -> "Window width: " ++ n)
 
                 windowHeight =
                     element.element.height
-                        |> String.fromFloat
+                        |> round
+                        |> String.fromInt
                         |> (\n -> "Window height: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
