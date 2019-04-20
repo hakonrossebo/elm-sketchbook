@@ -69,7 +69,7 @@ examplesMenu =
         (SketchMenuContainer
             "Examples"
         )
-        [ MenuNode (SketchMenuItem "Example 1" (ExampleRoute 1)) []
+        [ MenuNode (SketchMenuItem "Mousetrail" (ExampleRoute 1)) []
         , MenuNode (SketchMenuItem "Example 2" (ExampleRoute 2)) []
         , MenuNode (SketchMenuItem "Example 3" (ExampleRoute 3)) []
         ]

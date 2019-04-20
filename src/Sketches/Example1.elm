@@ -1,7 +1,7 @@
 module Sketches.Example1 exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser.Dom as Dom
-import Browser.Events exposing (onAnimationFrameDelta, onMouseMove, onResize)
+import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
 import Html exposing (Html, div, h1, span, text)
 import Html.Attributes exposing (class, id)
 import Json.Decode as Decode
@@ -34,6 +34,13 @@ type Msg
     | OnElement Dom.Element
     | OnWindowResize Int Int
     | OnError String
+    | OnKeyChange Direction
+
+
+type Direction
+    = Left
+    | Right
+    | Other
 
 
 init : ( Model, Cmd Msg )
@@ -43,6 +50,8 @@ init =
             { title = "Example 1 - Mouse trail"
             , markdown = """
 Move the mouse around in the window to play with the mouse trail.
+
+Press right/left arrow key to change the number of items in the mouse trail.
 
 The window position and size is also tracked by using Browser.Events
             """
@@ -101,6 +110,35 @@ update msg model =
         OnWindowResize x y ->
             ( model, getPosition )
 
+        OnKeyChange direction ->
+            let
+                minItems =
+                    5
+
+                maxItems =
+                    100
+
+                items =
+                    case direction of
+                        Left ->
+                            if model.mouseTrailItemLength > minItems then
+                                model.mouseTrailItemLength - 1
+
+                            else
+                                model.mouseTrailItemLength
+
+                        Right ->
+                            if model.mouseTrailItemLength < maxItems then
+                                model.mouseTrailItemLength + 1
+
+                            else
+                                model.mouseTrailItemLength
+
+                        Other ->
+                            model.mouseTrailItemLength
+            in
+            ( { model | mouseTrailItemLength = items }, Cmd.none )
+
 
 addPositionToTrail : Model -> List Position
 addPositionToTrail model =
@@ -122,6 +160,24 @@ addPositionToTrail model =
             []
 
 
+keyDecoder : Decode.Decoder Direction
+keyDecoder =
+    Decode.map toDirection (Decode.field "key" Decode.string)
+
+
+toDirection : String -> Direction
+toDirection string =
+    case string of
+        "ArrowLeft" ->
+            Left
+
+        "ArrowRight" ->
+            Right
+
+        _ ->
+            Other
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
@@ -137,6 +193,7 @@ subscriptions model =
         [ onAnimationFrameDelta OnAnimationFrameDelta
         , onMouseMove (Decode.map2 OnMouseMove offsetXDecoder offsetYDecoder)
         , onResize OnWindowResize
+        , onKeyDown (Decode.map OnKeyChange keyDecoder)
         ]
 
 
@@ -224,6 +281,11 @@ viewMousePosition model =
     case model.element of
         Just element ->
             let
+                mouseTrailItemLength =
+                    model.mouseTrailItemLength
+                        |> String.fromInt
+                        |> (\n -> "Trail items: " ++ n)
+
                 mouseX =
                     model.position.x
                         |> round
@@ -249,7 +311,8 @@ viewMousePosition model =
                         |> (\n -> "Window height: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
-                [ span [] [ text mouseX ]
+                [ span [] [ text mouseTrailItemLength ]
+                , span [] [ text mouseX ]
                 , span [] [ text mouseY ]
                 , span [] [ text windowWidth ]
                 , span [] [ text windowHeight ]
