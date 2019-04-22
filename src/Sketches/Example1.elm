@@ -15,7 +15,7 @@ type alias Model =
     SharedModel
         { mouseTrailItemLength : Int
         , position : Position
-        , element : Maybe Dom.Element
+        , sketchDrawingArea : Maybe Dom.Element
         , error : Maybe String
         , mouseTrail : List Position
         }
@@ -27,20 +27,20 @@ type alias Position =
     }
 
 
-type Msg
-    = NoOp
-    | OnAnimationFrameDelta Float
-    | OnMouseMove Float Float
-    | OnElement Dom.Element
-    | OnWindowResize Int Int
-    | OnError String
-    | OnKeyChange Direction
-
-
 type Direction
     = Left
     | Right
     | Other
+
+
+type Msg
+    = NoOp
+    | OnAnimationFrameDelta Float
+    | OnMouseMove Float Float
+    | OnSketchDrawingAreaFound Dom.Element
+    | OnWindowResize Int Int
+    | OnError String
+    | OnKeyChange Direction
 
 
 init : ( Model, Cmd Msg )
@@ -60,21 +60,21 @@ The window position and size is also tracked by using Browser.Events
     ( { info = info
       , mouseTrailItemLength = 20
       , position = { x = 0, y = 0 }
-      , element = Nothing
+      , sketchDrawingArea = Nothing
       , error = Nothing
       , mouseTrail = []
       }
-    , getPosition
+    , getSketchDrawingArea
     )
 
 
-getPosition : Cmd Msg
-getPosition =
+getSketchDrawingArea : Cmd Msg
+getSketchDrawingArea =
     let
         processElement e =
             case e of
                 Ok result ->
-                    OnElement result
+                    OnSketchDrawingAreaFound result
 
                 Err error ->
                     case error of
@@ -101,48 +101,53 @@ update msg model =
         OnMouseMove x y ->
             ( { model | position = { x = x, y = y } }, Cmd.none )
 
-        OnElement element ->
-            ( { model | element = Just element }, Cmd.none )
+        OnSketchDrawingAreaFound element ->
+            ( { model | sketchDrawingArea = Just element }, Cmd.none )
 
         OnError error ->
             ( { model | error = Just error }, Cmd.none )
 
         OnWindowResize x y ->
-            ( model, getPosition )
+            ( model, getSketchDrawingArea )
 
         OnKeyChange direction ->
-            let
-                minItems =
-                    5
+            ( { model | mouseTrailItemLength = updateMouseTrailItemLength direction model.mouseTrailItemLength }, Cmd.none )
 
-                maxItems =
-                    100
 
-                items =
-                    case direction of
-                        Left ->
-                            if model.mouseTrailItemLength > minItems then
-                                model.mouseTrailItemLength - 1
+updateMouseTrailItemLength : Direction -> Int -> Int
+updateMouseTrailItemLength direction mouseTrailItemLength =
+    let
+        minItems =
+            5
 
-                            else
-                                model.mouseTrailItemLength
+        maxItems =
+            100
 
-                        Right ->
-                            if model.mouseTrailItemLength < maxItems then
-                                model.mouseTrailItemLength + 1
+        items =
+            case direction of
+                Left ->
+                    if mouseTrailItemLength > minItems then
+                        mouseTrailItemLength - 1
 
-                            else
-                                model.mouseTrailItemLength
+                    else
+                        mouseTrailItemLength
 
-                        Other ->
-                            model.mouseTrailItemLength
-            in
-            ( { model | mouseTrailItemLength = items }, Cmd.none )
+                Right ->
+                    if mouseTrailItemLength < maxItems then
+                        mouseTrailItemLength + 1
+
+                    else
+                        mouseTrailItemLength
+
+                Other ->
+                    mouseTrailItemLength
+    in
+    items
 
 
 addPositionToTrail : Model -> List Position
 addPositionToTrail model =
-    case model.element of
+    case model.sketchDrawingArea of
         Just element ->
             if (model.position.x >= element.element.x && model.position.x <= element.element.x + element.element.width) && (model.position.y >= element.element.y && model.position.y <= element.element.y + element.element.height) then
                 let
@@ -204,7 +209,7 @@ view model =
             div [ class "sketch-default-container" ]
                 [ div [ class "sketch-default-top-item" ] [ text "Mouse - Keyboard and Window management" ]
                 , viewMouseTrail model
-                , viewMousePosition model
+                , viewMousePositionInformation model
                 ]
 
         Just error ->
@@ -213,10 +218,17 @@ view model =
                 ]
 
 
+viewError : String -> Html Msg
+viewError error =
+    div []
+        [ h1 [] [ text error ]
+        ]
+
+
 viewMouseTrail : Model -> Html Msg
 viewMouseTrail model =
     div [ class "sketch-default-main-item", id "sketch-drawing-area" ]
-        (case model.element of
+        (case model.sketchDrawingArea of
             Just element ->
                 let
                     windowWidth =
@@ -262,23 +274,9 @@ viewTrailItem position =
     circle [ cx pX, cy pY, r "10", fill "blue" ] []
 
 
-viewValid : Model -> Html Msg
-viewValid model =
-    div []
-        [ viewMousePosition model
-        ]
-
-
-viewError : String -> Html Msg
-viewError error =
-    div []
-        [ h1 [] [ text error ]
-        ]
-
-
-viewMousePosition : Model -> Html Msg
-viewMousePosition model =
-    case model.element of
+viewMousePositionInformation : Model -> Html Msg
+viewMousePositionInformation model =
+    case model.sketchDrawingArea of
         Just element ->
             let
                 mouseTrailItemLength =
@@ -320,5 +318,5 @@ viewMousePosition model =
 
         Nothing ->
             div [ class "sketch-default-footer-item" ]
-                [ h1 [] [ text "Element position not ready" ]
+                [ h1 [] [ text "Sketch drawing area not ready" ]
                 ]
