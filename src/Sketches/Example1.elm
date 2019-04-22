@@ -14,7 +14,7 @@ import Task
 type alias Model =
     SharedModel
         { mouseTrailItemLength : Int
-        , position : Position
+        , mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
         , error : Maybe String
         , mouseTrail : List Position
@@ -55,13 +55,13 @@ Move the mouse around in the window to play with the mouse trail.
 
 Use arrow keys to change the number of items in the mouse trail.
 
-The window position and size is also tracked by using Browser.Events
+The window mousePosition and size is also tracked by using Browser.Events
             """
             }
     in
     ( { info = info
       , mouseTrailItemLength = 20
-      , position = { x = 0, y = 0 }
+      , mousePosition = { x = 0, y = 0 }
       , sketchDrawingArea = Nothing
       , error = Nothing
       , mouseTrail = []
@@ -101,7 +101,7 @@ update msg model =
             ( { model | mouseTrail = trail }, Cmd.none )
 
         OnMouseMove x y ->
-            ( { model | position = { x = x, y = y } }, Cmd.none )
+            ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
 
         OnSketchDrawingAreaFound element ->
             ( { model | sketchDrawingArea = Just element }, Cmd.none )
@@ -165,12 +165,12 @@ addPositionToTrail : Model -> List Position
 addPositionToTrail model =
     case model.sketchDrawingArea of
         Just element ->
-            if (model.position.x >= element.element.x && model.position.x <= element.element.x + element.element.width) && (model.position.y >= element.element.y && model.position.y <= element.element.y + element.element.height) then
+            if (model.mousePosition.x >= element.element.x && model.mousePosition.x <= element.element.x + element.element.width) && (model.mousePosition.y >= element.element.y && model.mousePosition.y <= element.element.y + element.element.height) then
                 let
-                    translatePosition x y position =
-                        { x = position.x - x, y = position.y - y }
+                    translatePosition x y mousePosition =
+                        { x = mousePosition.x - x, y = mousePosition.y - y }
                 in
-                translatePosition element.element.x element.element.y model.position
+                translatePosition element.element.x element.element.y model.mousePosition
                     :: model.mouseTrail
                     |> List.take model.mouseTrailItemLength
 
@@ -283,14 +283,14 @@ viewMouseTrail model =
 
 
 viewTrailItem : Position -> Html Msg
-viewTrailItem position =
+viewTrailItem mousePosition =
     let
         pX =
-            position.x
+            mousePosition.x
                 |> String.fromFloat
 
         pY =
-            position.y
+            mousePosition.y
                 |> String.fromFloat
     in
     circle [ cx pX, cy pY, r "10", fill "blue" ] []
@@ -307,13 +307,13 @@ viewMousePositionInformation model =
                         |> (\n -> "Trail items: " ++ n)
 
                 mouseX =
-                    model.position.x
+                    model.mousePosition.x
                         |> round
                         |> String.fromInt
                         |> (\n -> "Mouse X: " ++ n)
 
                 mouseY =
-                    model.position.y
+                    model.mousePosition.y
                         |> round
                         |> String.fromInt
                         |> (\n -> "Mouse Y: " ++ n)
