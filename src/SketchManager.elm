@@ -15,6 +15,7 @@ import Sketches.Sketch1 as Sketch1
 import Sketches.Sketch2 as Sketch2
 import Sketches.Sketch3 as Sketch3
 import Sketches.Sketch4 as Sketch4
+import Sketches.Template1 as Template1
 
 
 
@@ -37,6 +38,7 @@ type Sketch
     | Example1Model Example1.Model
     | Example2Model Example2.Model
     | Example3Model Example3.Model
+    | Template1Model Template1.Model
     | GettingStartedModel GettingStarted.Model
     | NotFoundModel NotFound.Model
 
@@ -86,6 +88,9 @@ initExample id =
         3 ->
             mapModel Example3Model Example3Msg Example3.init
 
+        4 ->
+            mapModel Template1Model Template1Msg Template1.init
+
         _ ->
             initNotFound
 
@@ -121,6 +126,7 @@ type Msg
     | Example1Msg Example1.Msg
     | Example2Msg Example2.Msg
     | Example3Msg Example3.Msg
+    | Template1Msg Template1.Msg
     | GettingStartedMsg GettingStarted.Msg
     | NotFoundMsg NotFound.Msg
 
@@ -200,6 +206,13 @@ update msg model =
             in
             ( { model | sketch = Example3Model newExampleModel }, Cmd.map Example3Msg newExampleCmd )
 
+        ( Template1Msg subMsg, Template1Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Template1.update subMsg exampleModel
+            in
+            ( { model | sketch = Template1Model newExampleModel }, Cmd.map Template1Msg newExampleCmd )
+
         ( GettingStartedMsg subMsg, GettingStartedModel gettingStartedModel ) ->
             let
                 ( newGettingStartedModel, newGettingStartedCmd ) =
@@ -233,6 +246,9 @@ update msg model =
             ( model, Cmd.none )
 
         ( Example3Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Template1Msg subMsg, _ ) ->
             ( model, Cmd.none )
 
         ( GettingStartedMsg subMsg, _ ) ->
@@ -276,6 +292,10 @@ view model =
             Example3Model exampleModel ->
                 Example3.view exampleModel
                     |> Html.map Example3Msg
+
+            Template1Model templateModel ->
+                Template1.view templateModel
+                    |> Html.map Template1Msg
 
             NotFoundModel notFoundModel ->
                 NotFound.view notFoundModel
@@ -322,6 +342,9 @@ subscriptions model =
 
         Example3Model exampleModel ->
             Sub.map Example3Msg (Example3.subscriptions exampleModel)
+
+        Template1Model templateModel ->
+            Sub.map Template1Msg (Template1.subscriptions templateModel)
 
         GettingStartedModel gettingStartedModel ->
             Sub.map GettingStartedMsg (GettingStarted.subscriptions gettingStartedModel)
