@@ -30,6 +30,8 @@ type alias Position =
 type Direction
     = Left
     | Right
+    | Up
+    | Down
     | Other
 
 
@@ -51,7 +53,7 @@ init =
             , markdown = """
 Move the mouse around in the window to play with the mouse trail.
 
-Press right/left arrow key to change the number of items in the mouse trail.
+Use arrow keys to change the number of items in the mouse trail.
 
 The window position and size is also tracked by using Browser.Events
             """
@@ -132,7 +134,21 @@ updateMouseTrailItemLength direction mouseTrailItemLength =
                     else
                         mouseTrailItemLength
 
+                Down ->
+                    if mouseTrailItemLength > minItems then
+                        mouseTrailItemLength - 1
+
+                    else
+                        mouseTrailItemLength
+
                 Right ->
+                    if mouseTrailItemLength < maxItems then
+                        mouseTrailItemLength + 1
+
+                    else
+                        mouseTrailItemLength
+
+                Up ->
                     if mouseTrailItemLength < maxItems then
                         mouseTrailItemLength + 1
 
@@ -178,6 +194,12 @@ toDirection string =
 
         "ArrowRight" ->
             Right
+
+        "ArrowUp" ->
+            Up
+
+        "ArrowDown" ->
+            Down
 
         _ ->
             Other
