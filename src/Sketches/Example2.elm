@@ -15,7 +15,10 @@ type alias Model =
     SharedModel
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
+        , theta : Float
         , waveItems : List Position
+        , thetaIncrement : Float
+        , amplitude : Float
         , error : Maybe String
         }
 
@@ -44,24 +47,61 @@ type Msg
     | OnKeyChange Direction
 
 
+xSpacing =
+    16
+
+
+period =
+    500
+
+
+dx =
+    (Basics.pi * 2) / period * xSpacing
+
+
 init : ( Model, Cmd Msg )
 init =
     let
         info =
             { title = "Sine wave"
             , markdown = """
-Sine wave...
+Use the arrow keys to change theta and amplitude values.
             """
             }
     in
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
       , sketchDrawingArea = Nothing
+      , theta = 0
       , waveItems = []
+      , thetaIncrement =
+            0.02
+      , amplitude =
+            75.0
       , error = Nothing
       }
     , getSketchDrawingArea
     )
+
+
+calculateWave : Float -> Float -> Float -> Float -> Float -> ( Float, List Position )
+calculateWave width height theta amplitude thetaIncrement =
+    let
+        newTheta =
+            theta + thetaIncrement
+
+        length =
+            width
+                / xSpacing
+                |> floor
+
+        waveValues =
+            List.range 0 length
+                |> List.map (\yt -> dx * toFloat yt)
+                |> List.map (\yt -> yt + newTheta)
+                |> List.indexedMap (\idx yt -> { x = toFloat idx, y = sin yt * amplitude })
+    in
+    ( newTheta, waveValues )
 
 
 getSketchDrawingArea : Cmd Msg
@@ -88,7 +128,16 @@ update msg model =
             ( model, Cmd.none )
 
         OnAnimationFrameDelta diff ->
-            ( model, Cmd.none )
+            let
+                ( newTheta, newWave ) =
+                    case model.sketchDrawingArea of
+                        Nothing ->
+                            ( model.theta, model.waveItems )
+
+                        Just element ->
+                            calculateWave element.element.width element.element.height model.theta model.amplitude model.thetaIncrement
+            in
+            ( { model | theta = newTheta, waveItems = newWave }, Cmd.none )
 
         OnMouseMove x y ->
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
@@ -103,7 +152,68 @@ update msg model =
             ( model, getSketchDrawingArea )
 
         OnKeyChange direction ->
-            ( model, Cmd.none )
+            let
+                ( newThetaIncrement, newAmplitude ) =
+                    updateWaveParameters model direction
+            in
+            ( { model | amplitude = newAmplitude, thetaIncrement = newThetaIncrement }, Cmd.none )
+
+
+updateWaveParameters : Model -> Direction -> ( Float, Float )
+updateWaveParameters model direction =
+    let
+        minAmplitude =
+            5
+
+        maxAmplitude =
+            190
+
+        minThetaIncrement =
+            0.0
+
+        maxThetaIncrement =
+            8.0
+
+        dTheta =
+            0.001
+
+        dAmplitude =
+            1
+
+        ( newThetaIncrement, newAmplitude ) =
+            case direction of
+                Left ->
+                    if model.thetaIncrement - dTheta >= minThetaIncrement then
+                        ( model.thetaIncrement - dTheta, model.amplitude )
+
+                    else
+                        ( model.thetaIncrement, model.amplitude )
+
+                Right ->
+                    if model.thetaIncrement + dTheta <= maxThetaIncrement then
+                        ( model.thetaIncrement + dTheta, model.amplitude )
+
+                    else
+                        ( model.thetaIncrement, model.amplitude )
+
+                Up ->
+                    if model.amplitude + dAmplitude <= maxAmplitude then
+                        ( model.thetaIncrement, model.amplitude + dAmplitude )
+
+                    else
+                        ( model.thetaIncrement, model.amplitude )
+
+                Down ->
+                    if model.amplitude - dAmplitude >= minAmplitude then
+                        ( model.thetaIncrement, model.amplitude - dAmplitude )
+
+                    else
+                        ( model.thetaIncrement, model.amplitude )
+
+                _ ->
+                    ( model.thetaIncrement, model.amplitude )
+    in
+    ( newThetaIncrement, newAmplitude )
 
 
 keyDecoder : Decode.Decoder Direction
@@ -196,10 +306,9 @@ viewSketchDrawingContent model =
                     , height windowHeight
                     , viewBox viewBoxInfo
                     ]
-                    [ circle [ cx "100", cy "100", r "50", fill "red" ] []
-                    , circle [ cx "200", cy "150", r "80", fill "blue" ] []
-                    , circle [ cx "120", cy "170", r "30", fill "green" ] []
-                    ]
+                    (model.waveItems
+                        |> List.map (viewWaveItem element.element.width element.element.height)
+                    )
                 ]
 
             Nothing ->
@@ -208,22 +317,38 @@ viewSketchDrawingContent model =
         )
 
 
+viewWaveItem : Float -> Float -> Position -> Html Msg
+viewWaveItem width height position =
+    let
+        xPos =
+            position.x
+                * xSpacing
+                |> round
+                |> String.fromInt
+
+        yPos =
+            position.y
+                + (height / 2)
+                |> round
+                |> String.fromInt
+    in
+    circle [ cx xPos, cy yPos, r "10", fill "green" ] []
+
+
 viewMousePositionInformation : Model -> Html Msg
 viewMousePositionInformation model =
     case model.sketchDrawingArea of
         Just element ->
             let
-                mouseX =
-                    model.mousePosition.x
-                        |> round
-                        |> String.fromInt
-                        |> (\n -> "Mouse X: " ++ n)
+                amplitude =
+                    model.amplitude
+                        |> String.fromFloat
+                        |> (\n -> "Amplitude: " ++ n)
 
-                mouseY =
-                    model.mousePosition.y
-                        |> round
-                        |> String.fromInt
-                        |> (\n -> "Mouse Y: " ++ n)
+                thetaIncrement =
+                    model.thetaIncrement
+                        |> String.fromFloat
+                        |> (\n -> "Theta increment: " ++ n)
 
                 windowWidth =
                     element.element.width
@@ -238,8 +363,8 @@ viewMousePositionInformation model =
                         |> (\n -> "Window height: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
-                [ span [] [ text mouseX ]
-                , span [] [ text mouseY ]
+                [ span [] [ text amplitude ]
+                , span [] [ text thetaIncrement ]
                 , span [] [ text windowWidth ]
                 , span [] [ text windowHeight ]
                 ]
