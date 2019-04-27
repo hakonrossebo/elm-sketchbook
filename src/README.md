@@ -1,11 +1,13 @@
 # Elm Sketchbook
 
-Whether you are a new developer to Elm or an experienced Elm developer, the Elm Sketchbook wants to unblock you from setting up the boilerplate and provides examples on how to do various tasks.
+**Quickstart: Clone this project, Install Elm and Create-Elm-App, run elm-app start*
 
-Elm-Sketchbook was created when I found myself always having to create and setup a new app when trying out something new.
+Whether you are a new developer to Elm or an experienced Elm developer, the Elm Sketchbook can unblock you from setting up the boilerplate for proof of concepts. It also provides examples on how to do various tasks.
+
+Elm-Sketchbook was created when I found myself delayed or aborting the project when having to create and setup a new app when trying out something new.
 With Elm-Sketchbook, you always have a new blank sketch ready that works as a separate app. All sketches can then be navigated with the menu.
 
-This sketchbook comes with 10+ empty sketches and several examples + templates to get you started with Elm or to just experiment with the examples.
+This sketchbook comes with 10+ empty sketches and several examples / templates to get you started with Elm or to just experiment with the examples.
 
     * Sketch out new ideas, always having an empty sketch ready.
     * Learn from, experiment and expand on the the examples
@@ -21,37 +23,38 @@ The examples contain:
     * WebGL in Elm
     * Want to help? Contribute other examples
 
-Simplify the getting started experience by having features ready:
+Features:
 
-- Examples
-- 10+ empty sketches to start with
-- Keyboard and mouse interaction/navigation
-- FPS display
-- Menu navigation and previous/next sketch
-- Many examples to learn from
+    * "Built in" Examples
+    * 10+ empty Sketches to start with
+    * Keyboard and mouse interaction/navigation
+    * FPS display
+    * Menu navigation and previous/next sketch
+    * Can be used as a slideshow with separate Elm apps
 
 How to use:
 
-    * Start with Sketch1 and customize as you wish
+    * Start with an empty sketch and customize as you wish
     * Continue with other sketches as needed
     * Edit the menu to show only the sketches you want
     * Remove examples if needed
 
-How to get started
+How to get started:
 
 (Check the pre-requisites below if you haven't used Elm before)
 
-- Clone/Fork this project
-- Start the app with elm-app start
-- Start editing sketch 1-10
-- Modify the menu items to your need
-- Use the examples to learn, experiment or use as templates
+    * Please ensure you have Elm and Create-Elm-App installed
+    * Clone/Fork this project
+    * Start the app with elm-app start
+    * Start editing sketch 1-10
+    * Modify the menu items to your need
+    * Use the examples to learn, experiment or use as templates
 
-Pre-requisites:
+Pre-requisites: (Please check https://guide.elm-lang.org for details)
 
 - Download Elm
 - Setup your favorite Editor with an Elm plugin
 - Install Elm format
-- Install create-elm-app
+- Install [https://github.com/halfzebra/create-elm-app](https://github.com/halfzebra/create-elm-app)
 
-Please contribute with improvements and more examples
+Please contribute with improvements and more examples.
