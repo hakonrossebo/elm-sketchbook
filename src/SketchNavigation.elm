@@ -61,6 +61,12 @@ menu =
         , MenuNode (SketchMenuItem "Sketch 2" (SketchRoute 2)) []
         , MenuNode (SketchMenuItem "Sketch 3" (SketchRoute 3)) []
         , MenuNode (SketchMenuItem "Sketch 4" (SketchRoute 4)) []
+        , MenuNode (SketchMenuItem "Sketch 5" (SketchRoute 5)) []
+        , MenuNode (SketchMenuItem "Sketch 6" (SketchRoute 6)) []
+        , MenuNode (SketchMenuItem "Sketch 7" (SketchRoute 7)) []
+        , MenuNode (SketchMenuItem "Sketch 8" (SketchRoute 8)) []
+        , MenuNode (SketchMenuItem "Sketch 9" (SketchRoute 9)) []
+        , MenuNode (SketchMenuItem "Sketch 10" (SketchRoute 10)) []
         ]
 
 
