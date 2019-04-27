@@ -71,7 +71,7 @@ examplesMenu =
         )
         [ MenuNode (SketchMenuItem "Mousetrail" (ExampleRoute 1)) []
         , MenuNode (SketchMenuItem "Sine wave" (ExampleRoute 2)) []
-        , MenuNode (SketchMenuItem "Example 3" (ExampleRoute 3)) []
+        , MenuNode (SketchMenuItem "3D Startrail" (ExampleRoute 3)) []
         , MenuNode (SketchMenuItem "Template 1" (ExampleRoute 4)) []
         ]
 

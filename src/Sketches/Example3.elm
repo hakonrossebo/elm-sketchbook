@@ -1,14 +1,52 @@
 module Sketches.Example3 exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser.Dom as Dom
-import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
-import Html exposing (Html, div, h1, span, text)
+import Browser.Events exposing (Visibility(..), onAnimationFrameDelta, onKeyDown, onMouseMove, onResize, onVisibilityChange)
+import Color exposing (..)
+import Html exposing (Attribute, Html, div, h1, input, span, text)
 import Html.Attributes exposing (class, id)
 import Json.Decode as Decode
+import Random exposing (..)
 import Shared exposing (..)
-import Svg exposing (circle, svg)
+import Svg exposing (Svg, circle, g, svg)
 import Svg.Attributes exposing (cx, cy, fill, height, r, viewBox, width)
 import Task
+
+
+type alias Bounds =
+    { minX : Float
+    , minY : Float
+    , maxX : Float
+    , maxY : Float
+    , minDepth : Float
+    , maxDepth : Float
+    }
+
+
+bounds : Bounds
+bounds =
+    { minX = -45
+    , minY = -35
+    , maxX = 45
+    , maxY = 35
+    , minDepth = 1
+    , maxDepth = 32
+    }
+
+
+type alias Star =
+    { x : Float
+    , y : Float
+    , z : Float
+    , px : Int
+    , py : Int
+    , color : Color
+    }
+
+
+defaultStar : Star
+defaultStar =
+    { x = 0, y = 0, z = bounds.maxDepth, px = 0, py = 0, color = Color.white }
 
 
 type alias Model =
@@ -16,6 +54,10 @@ type alias Model =
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
         , error : Maybe String
+        , stars : List Star
+        , seed : Seed
+        , zVelocity : Float
+        , visibility : Visibility
         }
 
 
@@ -41,22 +83,30 @@ type Msg
     | OnWindowResize Int Int
     | OnError String
     | OnKeyChange Direction
+    | OnVisibilityChange Visibility
 
 
 init : ( Model, Cmd Msg )
 init =
     let
         info =
-            { title = "Template 1"
+            { title = "3D Startrail"
             , markdown = """
-Template with mouse, keyboard, window and animationframe messages. Uses the default sketch layout with a drawing area.
+Shows a 3D Startrail.
             """
             }
+
+        ( newStars, newSeed ) =
+            addStars True (initialSeed 1234) []
     in
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
       , sketchDrawingArea = Nothing
       , error = Nothing
+      , stars = newStars
+      , seed = newSeed
+      , zVelocity = 10
+      , visibility = Visible
       }
     , getSketchDrawingArea
     )
@@ -86,7 +136,11 @@ update msg model =
             ( model, Cmd.none )
 
         OnAnimationFrameDelta diff ->
-            ( model, Cmd.none )
+            let
+                ( newModel, newCmd ) =
+                    updateStep model diff
+            in
+            ( newModel, newCmd )
 
         OnMouseMove x y ->
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
@@ -102,6 +156,117 @@ update msg model =
 
         OnKeyChange direction ->
             ( model, Cmd.none )
+
+        OnVisibilityChange visibility ->
+            let
+                zVelocity =
+                    case visibility of
+                        Visible ->
+                            10
+
+                        Hidden ->
+                            0
+            in
+            ( { model | visibility = visibility, zVelocity = zVelocity }, Cmd.none )
+
+
+newStar : ( Float, Float ) -> Float -> Star
+newStar ( newX, newY ) newZ =
+    { defaultStar | x = newX, y = newY, z = newZ }
+
+
+perspective : Float
+perspective =
+    256
+
+
+starCount : Int
+starCount =
+    500
+
+
+addStars : Bool -> Seed -> List Star -> ( List Star, Seed )
+addStars initAllStars seed stars =
+    if (starCount - List.length stars) <= 0 then
+        ( stars, seed )
+
+    else
+        let
+            ( star, newSeed ) =
+                generateStar initAllStars seed
+        in
+        addStars initAllStars newSeed (star :: stars)
+
+
+generateStar : Bool -> Seed -> ( Star, Seed )
+generateStar initAllStars seed =
+    case initAllStars of
+        True ->
+            let
+                newz =
+                    Random.float bounds.minDepth bounds.maxDepth
+
+                ( randomz, newSeed ) =
+                    Random.step newz seed
+
+                pair =
+                    Random.pair (Random.float bounds.minX bounds.maxX) (Random.float bounds.minY bounds.maxY)
+
+                ( coords, newSeed2 ) =
+                    Random.step pair newSeed
+            in
+            ( newStar coords randomz, newSeed2 )
+
+        False ->
+            let
+                pair =
+                    Random.pair (Random.float bounds.minX bounds.maxX) (Random.float bounds.minY bounds.maxY)
+
+                ( coords, newSeed2 ) =
+                    Random.step pair seed
+            in
+            ( newStar coords bounds.maxDepth, newSeed2 )
+
+
+updateStep : Model -> Float -> ( Model, Cmd Msg )
+updateStep model dt =
+    case model.visibility of
+        Visible ->
+            let
+                ( updatedStars, updatedSeed ) =
+                    model.stars
+                        |> List.map (moveStar model.zVelocity dt)
+                        |> List.filter filterVisibleStars
+                        |> addStars False model.seed
+
+                newModel =
+                    { model
+                        | stars = updatedStars
+                        , seed = updatedSeed
+                    }
+            in
+            ( newModel
+            , Cmd.none
+            )
+
+        Hidden ->
+            ( model, Cmd.none )
+
+
+moveStar : Float -> Float -> Star -> Star
+moveStar velocity dt star =
+    let
+        zVelocity =
+            (dt * velocity) / 1000
+    in
+    { star
+        | z = star.z - zVelocity
+    }
+
+
+filterVisibleStars : Star -> Bool
+filterVisibleStars star =
+    abs star.x < bounds.maxX && abs star.y < bounds.maxY && star.z >= bounds.minDepth && star.z <= bounds.maxDepth
 
 
 keyDecoder : Decode.Decoder Direction
@@ -144,6 +309,7 @@ subscriptions model =
         , onMouseMove (Decode.map2 OnMouseMove offsetXDecoder offsetYDecoder)
         , onResize OnWindowResize
         , onKeyDown (Decode.map OnKeyChange keyDecoder)
+        , onVisibilityChange OnVisibilityChange
         ]
 
 
@@ -152,7 +318,7 @@ view model =
     case model.error of
         Nothing ->
             div [ class "sketch-default-container" ]
-                [ div [ class "sketch-default-top-item" ] [ text "Template with Mouse - Keyboard and Window messages" ]
+                [ div [ class "sketch-default-top-item" ] [ text "3D Startrail. Random generation of stars and updating depth z value with 2D projection." ]
                 , viewSketchDrawingContent model
                 , viewMousePositionInformation model
                 ]
@@ -194,9 +360,7 @@ viewSketchDrawingContent model =
                     , height windowHeight
                     , viewBox viewBoxInfo
                     ]
-                    [ circle [ cx "100", cy "100", r "50", fill "red" ] []
-                    , circle [ cx "200", cy "150", r "80", fill "blue" ] []
-                    , circle [ cx "120", cy "170", r "30", fill "green" ] []
+                    [ g [] (drawStars model element.element.width element.element.height)
                     ]
                 ]
 
@@ -204,6 +368,64 @@ viewSketchDrawingContent model =
                 [ text "Drawing area not ready"
                 ]
         )
+
+
+drawStars : Model -> Float -> Float -> List (Svg b)
+drawStars model width height =
+    let
+        windowHeight =
+            String.fromFloat height
+
+        windowWidth =
+            String.fromFloat width
+
+        windowCenterHeight =
+            height / 2
+
+        windowCenterWidth =
+            width / 2
+    in
+    model.stars
+        |> List.sortBy (\star -> star.z)
+        |> List.reverse
+        |> List.map calculate2DPoint
+        |> List.map (drawStar windowCenterWidth windowCenterHeight)
+
+
+drawStar : Float -> Float -> ( Float, Float, Float ) -> Svg.Svg g
+drawStar centerX centerY ( x, y, z ) =
+    let
+        x_ =
+            String.fromFloat (x + centerX)
+
+        y_ =
+            String.fromFloat (y + centerY)
+
+        size =
+            (1.2 - z / bounds.maxDepth) * 4
+
+        shade =
+            1 - z / bounds.maxDepth
+
+        shadeColor =
+            rgb shade shade shade
+    in
+    circle [ cx x_, cy y_, r (String.fromFloat size), fill (Color.toCssString shadeColor) ] []
+
+
+calculate2DPoint : Star -> ( Float, Float, Float )
+calculate2DPoint { x, y, z } =
+    let
+        k =
+            perspective / z
+
+        newX =
+            x * k
+
+        newY =
+            y * k
+    in
+    ( newX, newY, z )
 
 
 viewMousePositionInformation : Model -> Html Msg
