@@ -233,9 +233,16 @@ updateStep model dt =
     case model.visibility of
         Visible ->
             let
+                maxDt =
+                    if dt > 30 then
+                        30
+
+                    else
+                        dt
+
                 ( updatedStars, updatedSeed ) =
                     model.stars
-                        |> List.map (moveStar model.zVelocity dt)
+                        |> List.map (moveStar model.zVelocity maxDt)
                         |> List.filter filterVisibleStars
                         |> addStars False model.seed
 
