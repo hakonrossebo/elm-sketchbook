@@ -1,5 +1,6 @@
 # Distribution
 build/
+dist/
 .cache/
 
 # elm-package generated files
