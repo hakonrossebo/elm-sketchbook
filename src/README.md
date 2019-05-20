@@ -1,6 +1,6 @@
 # Elm Sketchbook
 
-**Quickstart: Clone this project, Install Elm and Create-Elm-App, run elm-app start*
+**Quickstart: Clone this project, run npm/yarn install, Install Elm and start using npm/yarn start*
 
 Whether you are a new developer to Elm or an experienced Elm developer, the Elm Sketchbook can unblock you from setting up the boilerplate for proof of concepts. It also provides examples on how to do various tasks.
 
@@ -43,7 +43,7 @@ How to get started:
 
 (Check the pre-requisites below if you haven't used Elm before)
 
-    * Please ensure you have Elm and Create-Elm-App installed
+    * Please ensure you have Elm installed
     * Clone/Fork this project
     * Start the app with elm-app start
     * Start editing sketch 1-10
@@ -52,9 +52,9 @@ How to get started:
 
 Pre-requisites: (Please check https://guide.elm-lang.org for details)
 
+- Use npm or Yarn
 - Download Elm
 - Setup your favorite Editor with an Elm plugin
 - Install Elm format
-- Install [https://github.com/halfzebra/create-elm-app](https://github.com/halfzebra/create-elm-app)
 
 Please contribute with improvements and more examples.
