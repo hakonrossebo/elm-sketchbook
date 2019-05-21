@@ -78,7 +78,15 @@ examplesMenu =
         [ MenuNode (SketchMenuItem "Mousetrail" (ExampleRoute 1)) []
         , MenuNode (SketchMenuItem "Sine wave" (ExampleRoute 2)) []
         , MenuNode (SketchMenuItem "3D Startrail" (ExampleRoute 3)) []
-        , MenuNode (SketchMenuItem "Template 1" (ExampleRoute 4)) []
+        , MenuNode (SketchMenuItem "Example 4" (ExampleRoute 4)) []
+
+        -- , MenuNode (SketchMenuItem "Example 5" (ExampleRoute 5)) []
+        -- , MenuNode (SketchMenuItem "Example 6" (ExampleRoute 6)) []
+        -- , MenuNode (SketchMenuItem "Example 7" (ExampleRoute 7)) []
+        -- , MenuNode (SketchMenuItem "Example 8" (ExampleRoute 8)) []
+        -- , MenuNode (SketchMenuItem "Example 9" (ExampleRoute 9)) []
+        -- , MenuNode (SketchMenuItem "Example 10" (ExampleRoute 10)) []
+        , MenuNode (SketchMenuItem "Template 1" (ExampleRoute 21)) []
         ]
 
 

@@ -7,8 +7,15 @@ import Markdown exposing (..)
 import Shared exposing (..)
 import SketchNavigation as Nav exposing (..)
 import Sketches.Example1 as Example1
+import Sketches.Example10 as Example10
 import Sketches.Example2 as Example2
 import Sketches.Example3 as Example3
+import Sketches.Example4 as Example4
+import Sketches.Example5 as Example5
+import Sketches.Example6 as Example6
+import Sketches.Example7 as Example7
+import Sketches.Example8 as Example8
+import Sketches.Example9 as Example9
 import Sketches.GettingStarted as GettingStarted
 import Sketches.NotFound as NotFound
 import Sketches.Sketch1 as Sketch1
@@ -26,6 +33,33 @@ import Sketches.Template1 as Template1
 
 
 ---- MODEL ----
+
+
+type Msg
+    = NoOp
+    | Sketch1Msg Sketch1.Msg
+    | Sketch2Msg Sketch2.Msg
+    | Sketch3Msg Sketch3.Msg
+    | Sketch4Msg Sketch4.Msg
+    | Sketch5Msg Sketch5.Msg
+    | Sketch6Msg Sketch6.Msg
+    | Sketch7Msg Sketch7.Msg
+    | Sketch8Msg Sketch8.Msg
+    | Sketch9Msg Sketch9.Msg
+    | Sketch10Msg Sketch10.Msg
+    | Example1Msg Example1.Msg
+    | Example2Msg Example2.Msg
+    | Example3Msg Example3.Msg
+    | Example4Msg Example4.Msg
+    | Example5Msg Example5.Msg
+    | Example6Msg Example6.Msg
+    | Example7Msg Example7.Msg
+    | Example8Msg Example8.Msg
+    | Example9Msg Example9.Msg
+    | Example10Msg Example10.Msg
+    | Template1Msg Template1.Msg
+    | GettingStartedMsg GettingStarted.Msg
+    | NotFoundMsg NotFound.Msg
 
 
 type alias Model =
@@ -50,6 +84,13 @@ type Sketch
     | Example1Model Example1.Model
     | Example2Model Example2.Model
     | Example3Model Example3.Model
+    | Example4Model Example4.Model
+    | Example5Model Example5.Model
+    | Example6Model Example6.Model
+    | Example7Model Example7.Model
+    | Example8Model Example8.Model
+    | Example9Model Example9.Model
+    | Example10Model Example10.Model
     | Template1Model Template1.Model
     | GettingStartedModel GettingStarted.Model
     | NotFoundModel NotFound.Model
@@ -119,6 +160,27 @@ initExample id =
             mapModel Example3Model Example3Msg Example3.init
 
         4 ->
+            mapModel Example4Model Example4Msg Example4.init
+
+        5 ->
+            mapModel Example5Model Example5Msg Example5.init
+
+        6 ->
+            mapModel Example6Model Example6Msg Example6.init
+
+        7 ->
+            mapModel Example7Model Example7Msg Example7.init
+
+        8 ->
+            mapModel Example8Model Example8Msg Example8.init
+
+        9 ->
+            mapModel Example9Model Example9Msg Example9.init
+
+        10 ->
+            mapModel Example10Model Example10Msg Example10.init
+
+        21 ->
             mapModel Template1Model Template1Msg Template1.init
 
         _ ->
@@ -145,26 +207,6 @@ initNotFound =
 
 
 ---- UPDATE ----
-
-
-type Msg
-    = NoOp
-    | Sketch1Msg Sketch1.Msg
-    | Sketch2Msg Sketch2.Msg
-    | Sketch3Msg Sketch3.Msg
-    | Sketch4Msg Sketch4.Msg
-    | Sketch5Msg Sketch5.Msg
-    | Sketch6Msg Sketch6.Msg
-    | Sketch7Msg Sketch7.Msg
-    | Sketch8Msg Sketch8.Msg
-    | Sketch9Msg Sketch9.Msg
-    | Sketch10Msg Sketch10.Msg
-    | Example1Msg Example1.Msg
-    | Example2Msg Example2.Msg
-    | Example3Msg Example3.Msg
-    | Template1Msg Template1.Msg
-    | GettingStartedMsg GettingStarted.Msg
-    | NotFoundMsg NotFound.Msg
 
 
 loadCurrentSketch : Nav.Route -> ( Model, Cmd Msg )
@@ -284,6 +326,55 @@ update msg model =
             in
             ( { model | sketch = Example3Model newExampleModel }, Cmd.map Example3Msg newExampleCmd )
 
+        ( Example4Msg subMsg, Example4Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example4.update subMsg exampleModel
+            in
+            ( { model | sketch = Example4Model newExampleModel }, Cmd.map Example4Msg newExampleCmd )
+
+        ( Example5Msg subMsg, Example5Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example5.update subMsg exampleModel
+            in
+            ( { model | sketch = Example5Model newExampleModel }, Cmd.map Example5Msg newExampleCmd )
+
+        ( Example6Msg subMsg, Example6Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example6.update subMsg exampleModel
+            in
+            ( { model | sketch = Example6Model newExampleModel }, Cmd.map Example6Msg newExampleCmd )
+
+        ( Example7Msg subMsg, Example7Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example7.update subMsg exampleModel
+            in
+            ( { model | sketch = Example7Model newExampleModel }, Cmd.map Example7Msg newExampleCmd )
+
+        ( Example8Msg subMsg, Example8Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example8.update subMsg exampleModel
+            in
+            ( { model | sketch = Example8Model newExampleModel }, Cmd.map Example8Msg newExampleCmd )
+
+        ( Example9Msg subMsg, Example9Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example9.update subMsg exampleModel
+            in
+            ( { model | sketch = Example9Model newExampleModel }, Cmd.map Example9Msg newExampleCmd )
+
+        ( Example10Msg subMsg, Example10Model exampleModel ) ->
+            let
+                ( newExampleModel, newExampleCmd ) =
+                    Example10.update subMsg exampleModel
+            in
+            ( { model | sketch = Example10Model newExampleModel }, Cmd.map Example10Msg newExampleCmd )
+
         ( Template1Msg subMsg, Template1Model exampleModel ) ->
             let
                 ( newExampleModel, newExampleCmd ) =
@@ -342,6 +433,27 @@ update msg model =
             ( model, Cmd.none )
 
         ( Example3Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example4Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example5Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example6Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example7Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example8Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example9Msg subMsg, _ ) ->
+            ( model, Cmd.none )
+
+        ( Example10Msg subMsg, _ ) ->
             ( model, Cmd.none )
 
         ( Template1Msg subMsg, _ ) ->
@@ -413,6 +525,34 @@ view model =
                 Example3.view exampleModel
                     |> Html.map Example3Msg
 
+            Example4Model exampleModel ->
+                Example4.view exampleModel
+                    |> Html.map Example4Msg
+
+            Example5Model exampleModel ->
+                Example5.view exampleModel
+                    |> Html.map Example5Msg
+
+            Example6Model exampleModel ->
+                Example6.view exampleModel
+                    |> Html.map Example6Msg
+
+            Example7Model exampleModel ->
+                Example7.view exampleModel
+                    |> Html.map Example7Msg
+
+            Example8Model exampleModel ->
+                Example8.view exampleModel
+                    |> Html.map Example8Msg
+
+            Example9Model exampleModel ->
+                Example9.view exampleModel
+                    |> Html.map Example9Msg
+
+            Example10Model exampleModel ->
+                Example10.view exampleModel
+                    |> Html.map Example10Msg
+
             Template1Model templateModel ->
                 Template1.view templateModel
                     |> Html.map Template1Msg
@@ -480,6 +620,27 @@ subscriptions model =
 
         Example3Model exampleModel ->
             Sub.map Example3Msg (Example3.subscriptions exampleModel)
+
+        Example4Model exampleModel ->
+            Sub.map Example4Msg (Example4.subscriptions exampleModel)
+
+        Example5Model exampleModel ->
+            Sub.map Example5Msg (Example5.subscriptions exampleModel)
+
+        Example6Model exampleModel ->
+            Sub.map Example6Msg (Example6.subscriptions exampleModel)
+
+        Example7Model exampleModel ->
+            Sub.map Example7Msg (Example7.subscriptions exampleModel)
+
+        Example8Model exampleModel ->
+            Sub.map Example8Msg (Example8.subscriptions exampleModel)
+
+        Example9Model exampleModel ->
+            Sub.map Example9Msg (Example9.subscriptions exampleModel)
+
+        Example10Model exampleModel ->
+            Sub.map Example10Msg (Example10.subscriptions exampleModel)
 
         Template1Model templateModel ->
             Sub.map Template1Msg (Template1.subscriptions templateModel)
