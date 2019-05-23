@@ -2,8 +2,9 @@ module Sketches.Example4 exposing (Model, Msg, addComplex, init, iterateComplexM
 
 import Browser.Dom as Dom
 import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
+import Color exposing (..)
 import Html exposing (Html, div, h1, span, text)
-import Html.Attributes exposing (class, id)
+import Html.Attributes exposing (class, id, style)
 import Json.Decode as Decode
 import Shared exposing (..)
 import Svg exposing (circle, svg)
@@ -183,35 +184,78 @@ viewSketchDrawingContent model =
     div [ class "sketch-default-main-item", id "sketch-drawing-area" ]
         (case model.sketchDrawingArea of
             Just element ->
-                let
-                    windowWidth =
-                        element.element.width
-                            |> round
-                            |> String.fromInt
+                -- let
+                --     windowWidth =
+                --         element.element.width
+                --             |> round
+                --             |> String.fromInt
+                --     windowHeight =
+                --         element.element.height
+                --             |> round
+                --             |> String.fromInt
+                --     viewBoxInfo =
+                --         "0 0 " ++ windowWidth ++ " " ++ windowHeight
+                -- in
+                -- [ svg
+                --     [ width windowWidth
+                --     , height windowHeight
+                --     , viewBox viewBoxInfo
+                --     ]
+                --     [ circle [ cx "100", cy "100", r "50", fill "red" ] []
+                --     , circle [ cx "200", cy "150", r "80", fill "blue" ] []
+                --     , circle [ cx "120", cy "170", r "30", fill "green" ] []
+                --     ]
+                -- ]
+                [ viewMandelbrot model.pixels ]
 
-                    windowHeight =
-                        element.element.height
-                            |> round
-                            |> String.fromInt
-
-                    viewBoxInfo =
-                        "0 0 " ++ windowWidth ++ " " ++ windowHeight
-                in
-                [ svg
-                    [ width windowWidth
-                    , height windowHeight
-                    , viewBox viewBoxInfo
-                    ]
-                    [ circle [ cx "100", cy "100", r "50", fill "red" ] []
-                    , circle [ cx "200", cy "150", r "80", fill "blue" ] []
-                    , circle [ cx "120", cy "170", r "30", fill "green" ] []
-                    ]
-                ]
-
+            -- []
             Nothing ->
                 [ text "Drawing area not ready"
                 ]
         )
+
+
+viewMandelbrot : List (List Int) -> Html Msg
+viewMandelbrot pixels =
+    pixels
+        |> List.map viewRow
+        |> div []
+
+
+viewRow : List Int -> Html Msg
+viewRow rowPixels =
+    div
+        [ style "height" "1px"
+        ]
+        (List.map viewPixel rowPixels)
+
+
+viewPixel : Int -> Html Msg
+viewPixel iterations =
+    let
+        color =
+            if iterations == 0 then
+                "black"
+
+            else
+                "white"
+
+        colorShade =
+            1 - toFloat iterations / 50
+
+        rgbColor =
+            rgb 0.0 0.0 colorShade
+                |> toCssString
+    in
+    div
+        [ style "width" "1px"
+        , style "height" "1px"
+
+        -- , style "background-color" color
+        , style "background-color" rgbColor
+        , style "display" "inline-block"
+        ]
+        []
 
 
 viewMousePositionInformation : Model -> Html Msg
@@ -284,7 +328,7 @@ squareComplex c =
 iterateComplexMandelbrot : ComplexNumber -> ComplexNumber -> Int -> Int -> Int
 iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIteration =
     if currentIteration > maxIterations then
-        0
+        maxMandelbrotIterations
 
     else if magnitudeComplex currentComplex > 2 then
         currentIteration
@@ -299,7 +343,7 @@ iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIterati
             nextIteration =
                 currentIteration + 1
         in
-        iterateComplexMandelbrot currentComplex newComplex maxIterations nextIteration
+        iterateComplexMandelbrot prevComplex newComplex maxIterations nextIteration
 
 
 calculateMandelbrot : Int -> Int -> List (List Int)
@@ -331,11 +375,15 @@ xMax =
 
 
 yMin =
-    -1.2
+    -2.0
 
 
 yMax =
-    1.2
+    2.0
+
+
+maxMandelbrotIterations =
+    50
 
 
 zeroComplex =
@@ -344,7 +392,8 @@ zeroComplex =
 
 calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Int
 calculateMandelbrotPixel xFactor yFactor y x =
-    iterateComplexMandelbrot zeroComplex (toComplex xFactor yFactor y x) 50 0
+    -- iterateComplexMandelbrot zeroComplex (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
+    iterateComplexMandelbrot (toComplex xFactor yFactor y x) (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
 
 
 toComplex : Float -> Float -> Int -> Int -> ComplexNumber
@@ -354,7 +403,6 @@ toComplex xFactor yFactor y x =
             toFloat x * xFactor + xMin
 
         i =
-            toFloat y * yFactor - yMax
+            toFloat y * yFactor + yMin
     in
-    -- Debug.log "ToComplex" { r = r, i = i }
     { r = r, i = i }
