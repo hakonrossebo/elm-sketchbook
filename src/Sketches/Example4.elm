@@ -15,6 +15,7 @@ type alias Model =
     SharedModel
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
+        , pixels : List (List Int)
         , error : Maybe String
         }
 
@@ -55,6 +56,7 @@ Template with mouse, keyboard, window and animationframe messages. Uses the defa
     in
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
+      , pixels = [ [] ]
       , sketchDrawingArea = Nothing
       , error = Nothing
       }
@@ -92,7 +94,11 @@ update msg model =
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
 
         OnSketchDrawingAreaFound element ->
-            ( { model | sketchDrawingArea = Just element }, Cmd.none )
+            let
+                pixels =
+                    calculateMandelbrot (round element.element.width) (round element.element.height)
+            in
+            ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
 
         OnError error ->
             ( { model | error = Just error }, Cmd.none )
@@ -102,6 +108,43 @@ update msg model =
 
         OnKeyChange direction ->
             ( model, Cmd.none )
+
+
+calculateMandelbrot : Int -> Int -> List (List Int)
+calculateMandelbrot width height =
+    let
+        calculateRow row =
+            List.range 0 width
+                |> List.map (calculateMandelbrotPixel width height row)
+
+        rows =
+            List.range 0 height
+                |> List.map calculateRow
+    in
+    rows
+
+
+zeroComplex =
+    { r = 0, i = 0 }
+
+
+calculateMandelbrotPixel : Int -> Int -> Int -> Int -> Int
+calculateMandelbrotPixel width height y x =
+    iterateComplexMandelbrot zeroComplex (toComplex width height y x) 50 0
+
+
+toComplex : Int -> Int -> Int -> Int -> ComplexNumber
+toComplex width height y x =
+    let
+        r =
+            (toFloat x - toFloat width / 2)
+                / 4
+
+        i =
+            (toFloat y - toFloat height / 2)
+                / 4
+    in
+    { r = r, i = i }
 
 
 keyDecoder : Decode.Decoder Direction
