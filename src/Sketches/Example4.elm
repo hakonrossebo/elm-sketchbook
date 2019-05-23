@@ -97,6 +97,8 @@ update msg model =
             let
                 pixels =
                     calculateMandelbrot (round element.element.width) (round element.element.height)
+
+                -- |> Debug.log "Mandelbrot"
             in
             ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
 
@@ -108,43 +110,6 @@ update msg model =
 
         OnKeyChange direction ->
             ( model, Cmd.none )
-
-
-calculateMandelbrot : Int -> Int -> List (List Int)
-calculateMandelbrot width height =
-    let
-        calculateRow row =
-            List.range 0 width
-                |> List.map (calculateMandelbrotPixel width height row)
-
-        rows =
-            List.range 0 height
-                |> List.map calculateRow
-    in
-    rows
-
-
-zeroComplex =
-    { r = 0, i = 0 }
-
-
-calculateMandelbrotPixel : Int -> Int -> Int -> Int -> Int
-calculateMandelbrotPixel width height y x =
-    iterateComplexMandelbrot zeroComplex (toComplex width height y x) 50 0
-
-
-toComplex : Int -> Int -> Int -> Int -> ComplexNumber
-toComplex width height y x =
-    let
-        r =
-            (toFloat x - toFloat width / 2)
-                / 4
-
-        i =
-            (toFloat y - toFloat height / 2)
-                / 4
-    in
-    { r = r, i = i }
 
 
 keyDecoder : Decode.Decoder Direction
@@ -335,3 +300,61 @@ iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIterati
                 currentIteration + 1
         in
         iterateComplexMandelbrot currentComplex newComplex maxIterations nextIteration
+
+
+calculateMandelbrot : Int -> Int -> List (List Int)
+calculateMandelbrot width height =
+    let
+        xFactor =
+            (xMax - xMin) / toFloat width
+
+        yFactor =
+            (yMax - yMin) / toFloat height
+
+        calculateRow row =
+            List.range 0 width
+                |> List.map (calculateMandelbrotPixel xFactor yFactor row)
+
+        rows =
+            List.range 0 height
+                |> List.map calculateRow
+    in
+    rows
+
+
+xMin =
+    -2.0
+
+
+xMax =
+    1.0
+
+
+yMin =
+    -1.2
+
+
+yMax =
+    1.2
+
+
+zeroComplex =
+    { r = 0, i = 0 }
+
+
+calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Int
+calculateMandelbrotPixel xFactor yFactor y x =
+    iterateComplexMandelbrot zeroComplex (toComplex xFactor yFactor y x) 50 0
+
+
+toComplex : Float -> Float -> Int -> Int -> ComplexNumber
+toComplex xFactor yFactor y x =
+    let
+        r =
+            toFloat x * xFactor + xMin
+
+        i =
+            toFloat y * yFactor - yMax
+    in
+    -- Debug.log "ToComplex" { r = r, i = i }
+    { r = r, i = i }
