@@ -1,5 +1,6 @@
 module Sketches.Example4 exposing (Model, Msg, addComplex, init, iterateComplexMandelbrot, magnitudeComplex, subscriptions, update, view)
 
+import Array exposing (Array)
 import Browser.Dom as Dom
 import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
 import Color exposing (..)
@@ -16,7 +17,7 @@ type alias Model =
     SharedModel
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
-        , pixels : List (List Int)
+        , pixels : Array (Array Int)
         , error : Maybe String
         }
 
@@ -57,7 +58,7 @@ Template with mouse, keyboard, window and animationframe messages. Uses the defa
     in
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
-      , pixels = [ [] ]
+      , pixels = Array.push (Array.fromList []) Array.empty
       , sketchDrawingArea = Nothing
       , error = Nothing
       }
@@ -215,19 +216,20 @@ viewSketchDrawingContent model =
         )
 
 
-viewMandelbrot : List (List Int) -> Html Msg
+viewMandelbrot : Array (Array Int) -> Html Msg
 viewMandelbrot pixels =
     pixels
-        |> List.map viewRow
+        |> Array.map viewRow
+        |> Array.toList
         |> div []
 
 
-viewRow : List Int -> Html Msg
+viewRow : Array Int -> Html Msg
 viewRow rowPixels =
     div
         [ style "height" "1px"
         ]
-        (List.map viewPixel rowPixels)
+        (Array.map viewPixel rowPixels |> Array.toList)
 
 
 viewPixel : Int -> Html Msg
@@ -346,7 +348,7 @@ iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIterati
         iterateComplexMandelbrot prevComplex newComplex maxIterations nextIteration
 
 
-calculateMandelbrot : Int -> Int -> List (List Int)
+calculateMandelbrot : Int -> Int -> Array (Array Int)
 calculateMandelbrot width height =
     let
         xFactor =
@@ -357,11 +359,13 @@ calculateMandelbrot width height =
 
         calculateRow row =
             List.range 0 width
-                |> List.map (calculateMandelbrotPixel xFactor yFactor row)
+                |> Array.fromList
+                |> Array.map (calculateMandelbrotPixel xFactor yFactor row)
 
         rows =
             List.range 0 height
-                |> List.map calculateRow
+                |> Array.fromList
+                |> Array.map calculateRow
     in
     rows
 
