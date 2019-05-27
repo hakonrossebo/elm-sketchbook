@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Browser.Dom as Dom
 import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
 import Color exposing (..)
+import Dict exposing (Dict)
 import Html exposing (Html, div, h1, span, text)
 import Html.Attributes exposing (class, id, style)
 import Json.Decode as Decode
@@ -17,7 +18,7 @@ type alias Model =
     SharedModel
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
-        , pixels : Array (Array Int)
+        , pixels : Dict Point Int
         , error : Maybe String
         }
 
@@ -26,6 +27,10 @@ type alias Position =
     { x : Float
     , y : Float
     }
+
+
+type alias Point =
+    ( Int, Int )
 
 
 type Direction
@@ -58,7 +63,7 @@ Template with mouse, keyboard, window and animationframe messages. Uses the defa
     in
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
-      , pixels = Array.push (Array.fromList []) Array.empty
+      , pixels = Dict.empty
       , sketchDrawingArea = Nothing
       , error = Nothing
       }
@@ -185,69 +190,54 @@ viewSketchDrawingContent model =
     div [ class "sketch-default-main-item", id "sketch-drawing-area" ]
         (case model.sketchDrawingArea of
             Just element ->
-                -- let
-                --     windowWidth =
-                --         element.element.width
-                --             |> round
-                --             |> String.fromInt
-                --     windowHeight =
-                --         element.element.height
-                --             |> round
-                --             |> String.fromInt
-                --     viewBoxInfo =
-                --         "0 0 " ++ windowWidth ++ " " ++ windowHeight
-                -- in
-                -- [ svg
-                --     [ width windowWidth
-                --     , height windowHeight
-                --     , viewBox viewBoxInfo
-                --     ]
-                --     [ circle [ cx "100", cy "100", r "50", fill "red" ] []
-                --     , circle [ cx "200", cy "150", r "80", fill "blue" ] []
-                --     , circle [ cx "120", cy "170", r "30", fill "green" ] []
-                --     ]
-                -- ]
-                [ viewMandelbrot model.pixels ]
+                let
+                    windowWidth =
+                        element.element.width
+                            |> round
 
-            -- []
+                    windowHeight =
+                        element.element.height
+                            |> round
+                in
+                [ viewMandelbrot windowWidth windowHeight model.pixels ]
+
             Nothing ->
                 [ text "Drawing area not ready"
                 ]
         )
 
 
-viewMandelbrot : Array (Array Int) -> Html Msg
-viewMandelbrot pixels =
-    pixels
-        |> Array.map viewRow
-        |> Array.toList
+viewMandelbrot : Int -> Int -> Dict Point Int -> Html Msg
+viewMandelbrot width height pixels =
+    List.range 0 height
+        |> List.map (viewMandelbrotRow pixels width)
         |> div []
 
 
-viewRow : Array Int -> Html Msg
-viewRow rowPixels =
+viewMandelbrotRow : Dict Point Int -> Int -> Int -> Html Msg
+viewMandelbrotRow pixels width currentHeight =
     div
         [ style "height" "1px"
         ]
-        (Array.map viewPixel rowPixels |> Array.toList)
+        (List.range 0 width
+            |> List.map (viewPixel pixels currentHeight)
+        )
 
 
-viewPixel : Int -> Html Msg
-viewPixel iterations =
+viewPixel : Dict Point Int -> Int -> Int -> Html Msg
+viewPixel pixels currentHeight currentWidth =
     let
-        color =
-            if iterations == 0 then
-                "black"
-
-            else
-                "white"
-
-        colorShade =
-            1 - toFloat iterations / 50
+        colorShade itr =
+            1 - toFloat itr / 50
 
         rgbColor =
-            rgb 0.0 0.0 colorShade
-                |> toCssString
+            case Dict.get ( currentWidth, currentHeight ) pixels of
+                Nothing ->
+                    "black"
+
+                Just iterations ->
+                    rgb 0.0 0.0 (colorShade iterations)
+                        |> toCssString
     in
     div
         [ style "width" "1px"
@@ -348,7 +338,7 @@ iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIterati
         iterateComplexMandelbrot prevComplex newComplex maxIterations nextIteration
 
 
-calculateMandelbrot : Int -> Int -> Array (Array Int)
+calculateMandelbrot : Int -> Int -> Dict Point Int
 calculateMandelbrot width height =
     let
         xFactor =
@@ -357,15 +347,13 @@ calculateMandelbrot width height =
         yFactor =
             (yMax - yMin) / toFloat height
 
-        calculateRow row =
+        calculateRow row mdict =
             List.range 0 width
-                |> Array.fromList
-                |> Array.map (calculateMandelbrotPixel xFactor yFactor row)
+                |> List.foldl (calculateMandelbrotPixel xFactor yFactor row) mdict
 
         rows =
             List.range 0 height
-                |> Array.fromList
-                |> Array.map calculateRow
+                |> List.foldl calculateRow Dict.empty
     in
     rows
 
@@ -394,10 +382,13 @@ zeroComplex =
     { r = 0, i = 0 }
 
 
-calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Int
-calculateMandelbrotPixel xFactor yFactor y x =
-    -- iterateComplexMandelbrot zeroComplex (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
-    iterateComplexMandelbrot (toComplex xFactor yFactor y x) (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
+calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Dict Point Int -> Dict Point Int
+calculateMandelbrotPixel xFactor yFactor y x pixels =
+    let
+        iterations =
+            iterateComplexMandelbrot (toComplex xFactor yFactor y x) (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
+    in
+    Dict.insert ( x, y ) iterations pixels
 
 
 toComplex : Float -> Float -> Int -> Int -> ComplexNumber
