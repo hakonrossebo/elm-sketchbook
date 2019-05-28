@@ -144,6 +144,12 @@ update msg model =
             let
                 pixels =
                     calculateMandelbrot (round (element.element.width / xS)) (round (element.element.height / yS))
+
+                histogram =
+                    pixels
+                        |> Dict.toList
+                        |> List.map (\( k, v ) -> v)
+                        |> List.foldl createHistogram Dict.empty
             in
             ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
 
@@ -155,6 +161,16 @@ update msg model =
 
         OnKeyChange direction ->
             ( model, Cmd.none )
+
+
+createHistogram : Int -> Dict Int Int -> Dict Int Int
+createHistogram iterations histogram =
+    case Dict.get iterations histogram of
+        Nothing ->
+            Dict.insert iterations 1 histogram
+
+        Just currentHistogramIterations ->
+            Dict.insert iterations (currentHistogramIterations + 1) histogram
 
 
 keyDecoder : Decode.Decoder Direction
