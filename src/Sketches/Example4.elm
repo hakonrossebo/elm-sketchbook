@@ -28,7 +28,7 @@ type alias Model =
 
 
 xS =
-    160
+    260
 
 
 
@@ -36,7 +36,7 @@ xS =
 
 
 yS =
-    100
+    200
 
 
 xMin =
@@ -229,15 +229,15 @@ viewSketchDrawingContent model =
             Just element ->
                 let
                     windowWidth =
-                        round (element.element.width / xS)
+                        floor (element.element.width / xS)
 
                     windowHeight =
-                        round (element.element.height / yS)
+                        floor (element.element.height / yS)
                 in
                 [ viewMandelbrot windowWidth windowHeight model.pixels ]
 
             Nothing ->
-                [ text "Drawing area not ready"
+                [ text "Calculating Mandelbrot..."
                 ]
         )
 
