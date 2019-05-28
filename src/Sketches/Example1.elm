@@ -18,6 +18,7 @@ type alias Model =
         , sketchDrawingArea : Maybe Dom.Element
         , error : Maybe String
         , mouseTrail : List Position
+        , fps : Int
         }
 
 
@@ -65,6 +66,7 @@ The window mousePosition and size is also tracked by using Browser.Events
       , sketchDrawingArea = Nothing
       , error = Nothing
       , mouseTrail = []
+      , fps = 0
       }
     , getSketchDrawingArea
     )
@@ -97,8 +99,11 @@ update msg model =
             let
                 trail =
                     addPositionToTrail model
+
+                newFps =
+                    calculateAverageFps model.fps (1000.0 / diff)
             in
-            ( { model | mouseTrail = trail }, Cmd.none )
+            ( { model | mouseTrail = trail, fps = newFps }, Cmd.none )
 
         OnMouseMove x y ->
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
@@ -329,6 +334,11 @@ viewMousePositionInformation model =
                         |> round
                         |> String.fromInt
                         |> (\n -> "Window height: " ++ n)
+
+                fps =
+                    model.fps
+                        |> String.fromInt
+                        |> (\n -> "FPS: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
                 [ span [] [ text mouseTrailItemLength ]
@@ -336,6 +346,7 @@ viewMousePositionInformation model =
                 , span [] [ text mouseY ]
                 , span [] [ text windowWidth ]
                 , span [] [ text windowHeight ]
+                , span [] [ text fps ]
                 ]
 
         Nothing ->

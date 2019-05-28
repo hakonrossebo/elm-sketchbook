@@ -58,6 +58,7 @@ type alias Model =
         , seed : Seed
         , zVelocity : Float
         , visibility : Visibility
+        , fps : Int
         }
 
 
@@ -107,6 +108,7 @@ Shows a 3D Startrail.
       , seed = newSeed
       , zVelocity = 10
       , visibility = Visible
+      , fps = 0
       }
     , getSketchDrawingArea
     )
@@ -139,8 +141,11 @@ update msg model =
             let
                 ( newModel, newCmd ) =
                     updateStep model diff
+
+                newFps =
+                    calculateAverageFps model.fps (1000.0 / diff)
             in
-            ( newModel, newCmd )
+            ( { newModel | fps = newFps }, newCmd )
 
         OnMouseMove x y ->
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
@@ -463,12 +468,18 @@ viewMousePositionInformation model =
                         |> round
                         |> String.fromInt
                         |> (\n -> "Window height: " ++ n)
+
+                fps =
+                    model.fps
+                        |> String.fromInt
+                        |> (\n -> "FPS: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
                 [ span [] [ text mouseX ]
                 , span [] [ text mouseY ]
                 , span [] [ text windowWidth ]
                 , span [] [ text windowHeight ]
+                , span [] [ text fps ]
                 ]
 
         Nothing ->

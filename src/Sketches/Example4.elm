@@ -193,8 +193,7 @@ subscriptions model =
             Decode.field "clientY" Decode.float
     in
     Sub.batch
-        [ onAnimationFrameDelta OnAnimationFrameDelta
-        , onMouseMove (Decode.map2 OnMouseMove offsetXDecoder offsetYDecoder)
+        [ onMouseMove (Decode.map2 OnMouseMove offsetXDecoder offsetYDecoder)
         , onResize OnWindowResize
         , onKeyDown (Decode.map OnKeyChange keyDecoder)
         ]

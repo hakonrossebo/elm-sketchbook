@@ -27,7 +27,6 @@ type alias Model =
     , previousRoute : Maybe Nav.Route
     , sketchModel : SketchManager.Model
     , sketchMenu : Nav.MenuItemList
-    , fps : Int
     }
 
 
@@ -56,7 +55,6 @@ init flags url navKey =
       , previousRoute = previousRoute
       , sketchModel = sketchModel
       , sketchMenu = menu
-      , fps = 0
       }
     , Cmd.map SketchMsg sketchCmd
     )
@@ -72,7 +70,6 @@ type Msg
     | SketchMsg SketchManager.Msg
     | UrlChanged Url
     | LinkClicked UrlRequest
-    | OnAnimationFrameDelta Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,14 +77,6 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-
-        OnAnimationFrameDelta diff ->
-            let
-                newFps =
-                    1000.0
-                        / diff
-            in
-            ( { model | fps = calculateAverageFps model.fps newFps }, Cmd.none )
 
         SketchMsg sketchMsg ->
             let
@@ -119,21 +108,6 @@ update msg model =
             , Cmd.none
             )
                 |> loadCurrentPage
-
-
-calculateAverageFps : Int -> Float -> Int
-calculateAverageFps old new =
-    let
-        smoothing =
-            0.95
-
-        floatOld =
-            toFloat old
-
-        avg =
-            (floatOld * smoothing) + (new * (1.0 - smoothing))
-    in
-    round avg
 
 
 loadCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -178,11 +152,6 @@ viewFooter model =
             [ span [ class "footerItem" ]
                 [ viewNavigatePrevious model
                 , viewNavigateNext model
-                ]
-            , span
-                [ class "footerItem" ]
-                [ String.fromInt model.fps |> text
-                , text " FPS"
                 ]
             ]
         ]
@@ -235,6 +204,5 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ onAnimationFrameDelta OnAnimationFrameDelta
-        , Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
+        [ Sub.map SketchMsg (SketchManager.subscriptions model.sketchModel)
         ]

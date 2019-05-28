@@ -20,6 +20,7 @@ type alias Model =
         , thetaIncrement : Float
         , amplitude : Float
         , error : Maybe String
+        , fps : Int
         }
 
 
@@ -79,6 +80,7 @@ Use the arrow keys to change theta and amplitude values.
       , amplitude =
             75.0
       , error = Nothing
+      , fps = 0
       }
     , getSketchDrawingArea
     )
@@ -136,8 +138,11 @@ update msg model =
 
                         Just element ->
                             calculateWave element.element.width element.element.height model.theta model.amplitude model.thetaIncrement
+
+                newFps =
+                    calculateAverageFps model.fps (1000.0 / diff)
             in
-            ( { model | theta = newTheta, waveItems = newWave }, Cmd.none )
+            ( { model | theta = newTheta, waveItems = newWave, fps = newFps }, Cmd.none )
 
         OnMouseMove x y ->
             ( { model | mousePosition = { x = x, y = y } }, Cmd.none )
@@ -361,12 +366,18 @@ viewMousePositionInformation model =
                         |> round
                         |> String.fromInt
                         |> (\n -> "Window height: " ++ n)
+
+                fps =
+                    model.fps
+                        |> String.fromInt
+                        |> (\n -> "FPS: " ++ n)
             in
             div [ class "sketch-default-footer-item" ]
                 [ span [] [ text amplitude ]
                 , span [] [ text thetaIncrement ]
                 , span [] [ text windowWidth ]
                 , span [] [ text windowHeight ]
+                , span [] [ text fps ]
                 ]
 
         Nothing ->
