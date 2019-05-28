@@ -95,9 +95,9 @@ init : ( Model, Cmd Msg )
 init =
     let
         info =
-            { title = "Template 1"
+            { title = "Mandelbrot"
             , markdown = """
-Template with mouse, keyboard, window and animationframe messages. Uses the default sketch layout with a drawing area.
+Mandelbrot example. To avoid too many pixels, a fixed resolution is used.
             """
             }
     in
