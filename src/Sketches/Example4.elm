@@ -23,6 +23,46 @@ type alias Model =
         }
 
 
+
+-- X resolution
+
+
+xS =
+    160
+
+
+
+-- Y resolution
+
+
+yS =
+    100
+
+
+xMin =
+    -2.0
+
+
+xMax =
+    1.0
+
+
+yMin =
+    -2.0
+
+
+yMax =
+    2.0
+
+
+maxMandelbrotIterations =
+    50
+
+
+zeroComplex =
+    { r = 0, i = 0 }
+
+
 type alias Position =
     { x : Float
     , y : Float
@@ -103,9 +143,7 @@ update msg model =
         OnSketchDrawingAreaFound element ->
             let
                 pixels =
-                    calculateMandelbrot (round element.element.width) (round element.element.height)
-
-                -- |> Debug.log "Mandelbrot"
+                    calculateMandelbrot (round (element.element.width / xS)) (round (element.element.height / yS))
             in
             ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
 
@@ -192,12 +230,10 @@ viewSketchDrawingContent model =
             Just element ->
                 let
                     windowWidth =
-                        element.element.width
-                            |> round
+                        round (element.element.width / xS)
 
                     windowHeight =
-                        element.element.height
-                            |> round
+                        round (element.element.height / yS)
                 in
                 [ viewMandelbrot windowWidth windowHeight model.pixels ]
 
@@ -208,42 +244,50 @@ viewSketchDrawingContent model =
 
 
 viewMandelbrot : Int -> Int -> Dict Point Int -> Html Msg
-viewMandelbrot width height pixels =
-    List.range 0 height
-        |> List.map (viewMandelbrotRow pixels width)
+viewMandelbrot xf yf pixels =
+    List.range 0 yS
+        |> List.map (viewMandelbrotRow pixels xf yf)
         |> div []
 
 
-viewMandelbrotRow : Dict Point Int -> Int -> Int -> Html Msg
-viewMandelbrotRow pixels width currentHeight =
+viewMandelbrotRow : Dict Point Int -> Int -> Int -> Int -> Html Msg
+viewMandelbrotRow pixels xf yf currentY =
+    let
+        yfString =
+            String.fromInt yf ++ "px"
+    in
     div
-        [ style "height" "1px"
+        [ style "height" yfString
         ]
-        (List.range 0 width
-            |> List.map (viewPixel pixels currentHeight)
+        (List.range 0 xS
+            |> List.map (viewPixel pixels xf yf currentY)
         )
 
 
-viewPixel : Dict Point Int -> Int -> Int -> Html Msg
-viewPixel pixels currentHeight currentWidth =
+viewPixel : Dict Point Int -> Int -> Int -> Int -> Int -> Html Msg
+viewPixel pixels xf yf currentY currentX =
     let
         colorShade itr =
             1 - toFloat itr / 50
 
         rgbColor =
-            case Dict.get ( currentWidth, currentHeight ) pixels of
+            case Dict.get ( currentX, currentY ) pixels of
                 Nothing ->
                     "black"
 
                 Just iterations ->
                     rgb 0.0 0.0 (colorShade iterations)
                         |> toCssString
+
+        xfString =
+            String.fromInt xf ++ "px"
+
+        yfString =
+            String.fromInt yf ++ "px"
     in
     div
-        [ style "width" "1px"
-        , style "height" "1px"
-
-        -- , style "background-color" color
+        [ style "width" xfString
+        , style "height" yfString
         , style "background-color" rgbColor
         , style "display" "inline-block"
         ]
@@ -342,44 +386,20 @@ calculateMandelbrot : Int -> Int -> Dict Point Int
 calculateMandelbrot width height =
     let
         xFactor =
-            (xMax - xMin) / toFloat width
+            (xMax - xMin) / toFloat xS
 
         yFactor =
-            (yMax - yMin) / toFloat height
+            (yMax - yMin) / toFloat yS
 
         calculateRow row mdict =
-            List.range 0 width
+            List.range 0 xS
                 |> List.foldl (calculateMandelbrotPixel xFactor yFactor row) mdict
 
         rows =
-            List.range 0 height
+            List.range 0 xS
                 |> List.foldl calculateRow Dict.empty
     in
     rows
-
-
-xMin =
-    -2.0
-
-
-xMax =
-    1.0
-
-
-yMin =
-    -2.0
-
-
-yMax =
-    2.0
-
-
-maxMandelbrotIterations =
-    50
-
-
-zeroComplex =
-    { r = 0, i = 0 }
 
 
 calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Dict Point Int -> Dict Point Int
