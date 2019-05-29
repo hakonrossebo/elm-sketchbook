@@ -19,6 +19,7 @@ type alias Model =
         { mousePosition : Position
         , sketchDrawingArea : Maybe Dom.Element
         , pixels : Dict Point Int
+        , colorPercents : Dict Int Float
         , error : Maybe String
         }
 
@@ -104,6 +105,7 @@ Mandelbrot example. To avoid too many pixels, a fixed resolution is used.
     ( { info = info
       , mousePosition = { x = 0, y = 0 }
       , pixels = Dict.empty
+      , colorPercents = Dict.empty
       , sketchDrawingArea = Nothing
       , error = Nothing
       }
@@ -150,8 +152,37 @@ update msg model =
                         |> Dict.toList
                         |> List.map (\( k, v ) -> v)
                         |> List.foldl createHistogram Dict.empty
+                        |> Dict.toList
+
+                histogramTotalIterations =
+                    histogram
+                        |> List.map (\( _, it ) -> it)
+                        |> List.sum
+
+                iterationPercents =
+                    let
+                        calcHistogramPercents : ( Int, Int ) -> ( Int, List ( Int, Float ) ) -> ( Int, List ( Int, Float ) )
+                        calcHistogramPercents ( currentIterations, currentCount ) ( accCount, accList ) =
+                            let
+                                runningTotal =
+                                    accCount + currentCount
+
+                                percents =
+                                    toFloat runningTotal
+                                        / toFloat histogramTotalIterations
+
+                                -- |> Debug.log "Percents:"
+                                updatedList =
+                                    ( currentIterations, percents ) :: accList
+                            in
+                            ( runningTotal, updatedList )
+                    in
+                    histogram
+                        |> List.foldl calcHistogramPercents ( 0, [] )
+                        |> (\( _, lst ) -> lst)
+                        |> Dict.fromList
             in
-            ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
+            ( { model | sketchDrawingArea = Just element, pixels = pixels, colorPercents = iterationPercents }, Cmd.none )
 
         OnError error ->
             ( { model | error = Just error }, Cmd.none )
@@ -250,7 +281,7 @@ viewSketchDrawingContent model =
                     windowHeight =
                         floor (element.element.height / yS)
                 in
-                [ viewMandelbrot windowWidth windowHeight model.pixels ]
+                [ viewMandelbrot windowWidth windowHeight model.pixels model.colorPercents ]
 
             Nothing ->
                 [ text "Calculating Mandelbrot..."
@@ -258,15 +289,15 @@ viewSketchDrawingContent model =
         )
 
 
-viewMandelbrot : Int -> Int -> Dict Point Int -> Html Msg
-viewMandelbrot xf yf pixels =
+viewMandelbrot : Int -> Int -> Dict Point Int -> Dict Int Float -> Html Msg
+viewMandelbrot xf yf pixels percents =
     List.range 0 yS
-        |> List.map (viewMandelbrotRow pixels xf yf)
+        |> List.map (viewMandelbrotRow pixels percents xf yf)
         |> div []
 
 
-viewMandelbrotRow : Dict Point Int -> Int -> Int -> Int -> Html Msg
-viewMandelbrotRow pixels xf yf currentY =
+viewMandelbrotRow : Dict Point Int -> Dict Int Float -> Int -> Int -> Int -> Html Msg
+viewMandelbrotRow pixels percents xf yf currentY =
     let
         yfString =
             String.fromInt yf ++ "px"
@@ -275,23 +306,98 @@ viewMandelbrotRow pixels xf yf currentY =
         [ style "height" yfString
         ]
         (List.range 0 xS
-            |> List.map (viewPixel pixels xf yf currentY)
+            |> List.map (viewPixel pixels percents xf yf currentY)
         )
 
 
-viewPixel : Dict Point Int -> Int -> Int -> Int -> Int -> Html Msg
-viewPixel pixels xf yf currentY currentX =
+linearInterpolation : Float -> Float -> Int -> Float
+linearInterpolation color1 color2 t =
+    color1 * (1 - toFloat t) + color2 * toFloat t
+
+
+viewPixel : Dict Point Int -> Dict Int Float -> Int -> Int -> Int -> Int -> Html Msg
+viewPixel pixels percents xf yf currentY currentX =
     let
         colorShade itr =
             1 - toFloat itr / 50
 
-        rgbColor =
+        -- rgbColor =
+        --     case Dict.get ( currentX, currentY ) pixels of
+        --         Nothing ->
+        --             "black"
+        --         Just iterations ->
+        --             rgb 0.0 0.0 (colorShade iterations)
+        --                 |> toCssString
+        rgbColorHist =
             case Dict.get ( currentX, currentY ) pixels of
                 Nothing ->
                     "black"
 
                 Just iterations ->
-                    rgb 0.0 0.0 (colorShade iterations)
+                    let
+                        currentPercent =
+                            case Dict.get iterations percents of
+                                Nothing ->
+                                    0
+
+                                Just p ->
+                                    p
+
+                        h =
+                            -- 1 - currentPercent
+                            -- 1 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) maxMandelbrotIterations)
+                            0.7 - (1 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
+
+                        -- 1 - currentPercent
+                        -- 0.2
+                        s =
+                            0.6
+
+                        l =
+                            if iterations == 0 then
+                                0
+
+                            else
+                                0.5
+                    in
+                    -- hsl h s l
+                    rgb 0 0 h
+                        |> toCssString
+
+        hslColor =
+            case Dict.get ( currentX, currentY ) pixels of
+                Nothing ->
+                    hsl 0 0 0
+                        |> toCssString
+
+                Just iterations ->
+                    let
+                        currentPercent =
+                            case Dict.get iterations percents of
+                                Nothing ->
+                                    0
+
+                                Just p ->
+                                    -- Debug.log "P" p
+                                    p
+
+                        h =
+                            -- 0.5 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1)
+                            0.7 - (0.7 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
+
+                        -- 1 - currentPercent
+                        -- 0.2
+                        s =
+                            0.6
+
+                        l =
+                            if iterations == 0 then
+                                0
+
+                            else
+                                0.5
+                    in
+                    hsl h s l
                         |> toCssString
 
         xfString =
@@ -303,7 +409,10 @@ viewPixel pixels xf yf currentY currentX =
     div
         [ style "width" xfString
         , style "height" yfString
-        , style "background-color" rgbColor
+
+        -- , style "background-color" rgbColor
+        -- , style "background-color" hslColor
+        , style "background-color" rgbColorHist
         , style "display" "inline-block"
         ]
         []
