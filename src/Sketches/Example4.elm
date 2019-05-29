@@ -45,7 +45,7 @@ xMin =
 
 
 xMax =
-    1.0
+    2.0
 
 
 yMin =
@@ -319,87 +319,81 @@ viewPixel : Dict Point Int -> Dict Int Float -> Int -> Int -> Int -> Int -> Html
 viewPixel pixels percents xf yf currentY currentX =
     let
         colorShade itr =
-            1 - toFloat itr / 50
+            -- 1 - toFloat itr / maxMandelbrotIterations
+            1 - (1 - toFloat itr / 18)
 
-        -- rgbColor =
-        --     case Dict.get ( currentX, currentY ) pixels of
-        --         Nothing ->
-        --             "black"
-        --         Just iterations ->
-        --             rgb 0.0 0.0 (colorShade iterations)
-        --                 |> toCssString
-        rgbColorHist =
+        rgbColor =
             case Dict.get ( currentX, currentY ) pixels of
                 Nothing ->
                     "black"
 
                 Just iterations ->
-                    let
-                        currentPercent =
-                            case Dict.get iterations percents of
-                                Nothing ->
-                                    0
-
-                                Just p ->
-                                    p
-
-                        h =
-                            -- 1 - currentPercent
-                            -- 1 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) maxMandelbrotIterations)
-                            0.7 - (1 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
-
-                        -- 1 - currentPercent
-                        -- 0.2
-                        s =
-                            0.6
-
-                        l =
-                            if iterations == 0 then
-                                0
-
-                            else
-                                0.5
-                    in
-                    -- hsl h s l
-                    rgb 0 0 h
+                    rgb 0.0 0.0 (colorShade iterations)
                         |> toCssString
 
-        hslColor =
-            case Dict.get ( currentX, currentY ) pixels of
-                Nothing ->
-                    hsl 0 0 0
-                        |> toCssString
-
-                Just iterations ->
-                    let
-                        currentPercent =
-                            case Dict.get iterations percents of
-                                Nothing ->
-                                    0
-
-                                Just p ->
-                                    -- Debug.log "P" p
-                                    p
-
-                        h =
-                            -- 0.5 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1)
-                            0.7 - (0.7 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
-
-                        -- 1 - currentPercent
-                        -- 0.2
-                        s =
-                            0.6
-
-                        l =
-                            if iterations == 0 then
-                                0
-
-                            else
-                                0.5
-                    in
-                    hsl h s l
-                        |> toCssString
-
+        -- rgbColorHist =
+        --     case Dict.get ( currentX, currentY ) pixels of
+        --         Nothing ->
+        --             "black"
+        --         Just iterations ->
+        --             let
+        --                 currentPercent =
+        --                     case Dict.get iterations percents of
+        --                         Nothing ->
+        --                             1
+        --                         Just p ->
+        --                             p
+        --                 rStart =
+        --                     0.0
+        --                 rChange =
+        --                     0.1
+        --                 gStart =
+        --                     0.0
+        --                 gChange =
+        --                     0.1
+        --                 bStart =
+        --                     0.1
+        --                 bChange =
+        --                     0.9
+        --                 r =
+        --                     rStart + rChange * currentPercent
+        --                 g =
+        --                     gStart + gChange * currentPercent
+        --                 b =
+        --                     bStart + bChange * currentPercent
+        --             in
+        --             -- hsl h s l
+        --             rgb r g b
+        --                 |> toCssString
+        -- hslColor =
+        --     case Dict.get ( currentX, currentY ) pixels of
+        --         Nothing ->
+        --             hsl 0 0 0
+        --                 |> toCssString
+        --         Just iterations ->
+        --             let
+        --                 currentPercent =
+        --                     case Dict.get iterations percents of
+        --                         Nothing ->
+        --                             0
+        --                         Just p ->
+        --                             -- Debug.log "P" p
+        --                             p
+        --                 h =
+        --                     -- 0.5 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1)
+        --                     0.7 - (0.7 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
+        --                 -- 1 - currentPercent
+        --                 -- 0.2
+        --                 s =
+        --                     0.6
+        --                 l =
+        --                     if iterations == 0 then
+        --                         0
+        --                     else
+        --                         0.5
+        --             in
+        --             hsl h s l
+        --                 |> toCssString
         xfString =
             String.fromInt xf ++ "px"
 
@@ -409,10 +403,10 @@ viewPixel pixels percents xf yf currentY currentX =
     div
         [ style "width" xfString
         , style "height" yfString
+        , style "background-color" rgbColor
 
-        -- , style "background-color" rgbColor
         -- , style "background-color" hslColor
-        , style "background-color" rgbColorHist
+        -- , style "background-color" rgbColorHist
         , style "display" "inline-block"
         ]
         []
@@ -488,7 +482,7 @@ squareComplex c =
 iterateComplexMandelbrot : ComplexNumber -> ComplexNumber -> Int -> Int -> Int
 iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIteration =
     if currentIteration > maxIterations then
-        maxMandelbrotIterations
+        0
 
     else if magnitudeComplex currentComplex > 2 then
         currentIteration
@@ -520,7 +514,7 @@ calculateMandelbrot width height =
                 |> List.foldl (calculateMandelbrotPixel xFactor yFactor row) mdict
 
         rows =
-            List.range 0 xS
+            List.range 0 yS
                 |> List.foldl calculateRow Dict.empty
     in
     rows
@@ -530,9 +524,16 @@ calculateMandelbrotPixel : Float -> Float -> Int -> Int -> Dict Point Int -> Dic
 calculateMandelbrotPixel xFactor yFactor y x pixels =
     let
         iterations =
-            iterateComplexMandelbrot (toComplex xFactor yFactor y x) (toComplex xFactor yFactor y x) maxMandelbrotIterations 0
+            iterateComplexMandelbrot (toComplex xFactor yFactor y x) (toComplex xFactor yFactor y x) maxMandelbrotIterations 1
+
+        newDict =
+            if iterations == 0 then
+                pixels
+
+            else
+                Dict.insert ( x, y ) iterations pixels
     in
-    Dict.insert ( x, y ) iterations pixels
+    newDict
 
 
 toComplex : Float -> Float -> Int -> Int -> ComplexNumber
