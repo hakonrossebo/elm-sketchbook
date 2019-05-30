@@ -2,7 +2,7 @@ module Sketches.Example4 exposing (Model, Msg, addComplex, init, iterateComplexM
 
 import Array exposing (Array)
 import Browser.Dom as Dom
-import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove, onResize)
+import Browser.Events exposing (onAnimationFrameDelta, onClick, onKeyDown, onMouseMove, onResize)
 import Color exposing (..)
 import Dict exposing (Dict)
 import Html exposing (Html, div, h1, span, text)
@@ -66,6 +66,7 @@ type Direction
 
 type Msg
     = NoOp
+    | OnMouseClick
     | OnAnimationFrameDelta Float
     | OnMouseMove Float Float
     | OnSketchDrawingAreaFound Dom.Element
@@ -91,7 +92,7 @@ Mandelbrot example. To avoid too many pixels, a fixed resolution is used.
             , reMax = 2.0
             , imMin = -2.0
             , imMax = 2.0
-            , maxMandelbrotIterations = 150
+            , maxMandelbrotIterations = 250
             }
     in
     ( { info = info
@@ -128,6 +129,24 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        OnMouseClick ->
+            let
+                mouseComplexPos =
+                    case model.sketchDrawingArea of
+                        Just element ->
+                            mouseposToComplex model.mousePosition element model.mandelbrotParameters
+
+                        Nothing ->
+                            zeroComplex
+
+                newZoomedParameters =
+                    applyZoom model.mandelbrotParameters mouseComplexPos 1.4
+
+                pixels =
+                    calculateMandelbrot model.mandelbrotParameters
+            in
+            ( { model | mandelbrotParameters = newZoomedParameters, pixels = pixels }, Cmd.none )
 
         OnAnimationFrameDelta diff ->
             ( model, Cmd.none )
@@ -187,6 +206,56 @@ update msg model =
             ( model, Cmd.none )
 
 
+applyZoom : MandelbrotParameters -> ComplexNumber -> Float -> MandelbrotParameters
+applyZoom parameters pos zoomFactor =
+    let
+        i =
+            1.0 / zoomFactor
+
+        reMin =
+            interpolateM pos.re parameters.reMin i
+
+        reMax =
+            interpolateM pos.re parameters.reMax i
+
+        imMin =
+            interpolateM pos.im parameters.imMin i
+
+        imMax =
+            interpolateM pos.im parameters.imMax i
+    in
+    { parameters | reMin = reMin, reMax = reMax, imMin = imMin, imMax = imMax }
+
+
+interpolateM : Float -> Float -> Float -> Float
+interpolateM start end i =
+    start + ((end - start) * i)
+
+
+mouseposToComplex : Position -> Dom.Element -> MandelbrotParameters -> ComplexNumber
+mouseposToComplex mousePosition element mandelbrotParameters =
+    let
+        xWindowPos =
+            mousePosition.x - element.element.x
+
+        yWindowPos =
+            mousePosition.y - element.element.y
+
+        reWidth =
+            element.element.width / (mandelbrotParameters.reMax - mandelbrotParameters.reMin)
+
+        imHeight =
+            element.element.height / (mandelbrotParameters.imMax - mandelbrotParameters.imMin)
+
+        re =
+            xWindowPos / reWidth + mandelbrotParameters.reMin
+
+        im =
+            yWindowPos / imHeight + mandelbrotParameters.imMin
+    in
+    { re = re, im = im }
+
+
 createHistogram : Int -> Dict Int Int -> Dict Int Int
 createHistogram iterations histogram =
     case Dict.get iterations histogram of
@@ -234,6 +303,7 @@ subscriptions model =
     in
     Sub.batch
         [ onMouseMove (Decode.map2 OnMouseMove offsetXDecoder offsetYDecoder)
+        , onClick (Decode.succeed OnMouseClick)
         , onResize OnWindowResize
         , onKeyDown (Decode.map OnKeyChange keyDecoder)
         ]
@@ -313,7 +383,7 @@ viewPixel parameters pixels percents xPixelSize yPixelSize currentY currentX =
     let
         colorShade itr =
             -- 1 - toFloat itr / maxMandelbrotIterations
-            1 - (1 - toFloat itr / 18)
+            1 - (1 - toFloat itr / 22)
 
         rgbColor =
             case Dict.get ( currentX, currentY ) pixels of
