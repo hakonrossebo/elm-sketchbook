@@ -37,7 +37,13 @@ type alias MandelbrotParameters =
 
 
 zeroComplex =
-    { r = 0, i = 0 }
+    { re = 0, im = 0 }
+
+
+type alias ComplexNumber =
+    { re : Float
+    , im : Float
+    }
 
 
 type alias Position =
@@ -277,23 +283,23 @@ viewSketchDrawingContent model =
 
 
 viewMandelbrot : MandelbrotParameters -> Int -> Int -> Dict Point Int -> Dict Int Float -> Html Msg
-viewMandelbrot parameters xf yf pixels percents =
+viewMandelbrot parameters xPixelSize yPixelSize pixels percents =
     List.range 0 parameters.yResolution
-        |> List.map (viewMandelbrotRow parameters pixels percents xf yf)
+        |> List.map (viewMandelbrotRow parameters pixels percents xPixelSize yPixelSize)
         |> div []
 
 
 viewMandelbrotRow : MandelbrotParameters -> Dict Point Int -> Dict Int Float -> Int -> Int -> Int -> Html Msg
-viewMandelbrotRow parameters pixels percents xf yf currentY =
+viewMandelbrotRow parameters pixels percents xPixelSize yPixelSize currentY =
     let
-        yfString =
-            String.fromInt yf ++ "px"
+        yPixelSizeString =
+            String.fromInt yPixelSize ++ "px"
     in
     div
-        [ style "height" yfString
+        [ style "height" yPixelSizeString
         ]
         (List.range 0 parameters.xResolution
-            |> List.map (viewPixel parameters pixels percents xf yf currentY)
+            |> List.map (viewPixel parameters pixels percents xPixelSize yPixelSize currentY)
         )
 
 
@@ -303,7 +309,7 @@ linearInterpolation color1 color2 t =
 
 
 viewPixel : MandelbrotParameters -> Dict Point Int -> Dict Int Float -> Int -> Int -> Int -> Int -> Html Msg
-viewPixel parameters pixels percents xf yf currentY currentX =
+viewPixel parameters pixels percents xPixelSize yPixelSize currentY currentX =
     let
         colorShade itr =
             -- 1 - toFloat itr / maxMandelbrotIterations
@@ -342,7 +348,7 @@ viewPixel parameters pixels percents xf yf currentY currentX =
         --                     0.1
         --                 bChange =
         --                     0.9
-        --                 r =
+        --                 re =
         --                     rStart + rChange * currentPercent
         --                 g =
         --                     gStart + gChange * currentPercent
@@ -350,7 +356,7 @@ viewPixel parameters pixels percents xf yf currentY currentX =
         --                     bStart + bChange * currentPercent
         --             in
         --             -- hsl h s l
-        --             rgb r g b
+        --             rgb re g b
         --                 |> toCssString
         -- hslColor =
         --     case Dict.get ( currentX, currentY ) pixels of
@@ -381,15 +387,15 @@ viewPixel parameters pixels percents xf yf currentY currentX =
         --             in
         --             hsl h s l
         --                 |> toCssString
-        xfString =
-            String.fromInt xf ++ "px"
+        xPixelSizeString =
+            String.fromInt xPixelSize ++ "px"
 
-        yfString =
-            String.fromInt yf ++ "px"
+        yPixelSizeString =
+            String.fromInt yPixelSize ++ "px"
     in
     div
-        [ style "width" xfString
-        , style "height" yfString
+        [ style "width" xPixelSizeString
+        , style "height" yPixelSizeString
         , style "background-color" rgbColor
 
         -- , style "background-color" hslColor
@@ -441,32 +447,26 @@ viewMousePositionInformation model =
                 ]
 
 
-type alias ComplexNumber =
-    { r : Float
-    , i : Float
-    }
-
-
 
 -- Mandelbrot calculations
 
 
 addComplex : ComplexNumber -> ComplexNumber -> ComplexNumber
 addComplex a b =
-    { r = a.r + b.r
-    , i = a.i + b.i
+    { re = a.re + b.re
+    , im = a.im + b.im
     }
 
 
 magnitudeComplex : ComplexNumber -> Float
 magnitudeComplex c =
-    sqrt (c.r * c.r + c.i * c.i)
+    sqrt (c.re * c.re + c.im * c.im)
 
 
 squareComplex : ComplexNumber -> ComplexNumber
 squareComplex c =
-    { r = c.r * c.r - c.i * c.i
-    , i = 2.0 * c.r * c.i
+    { re = c.re * c.re - c.im * c.im
+    , im = 2.0 * c.re * c.im
     }
 
 
@@ -530,10 +530,10 @@ calculateMandelbrotPixel parameters xFactor yFactor y x pixels =
 toComplex : MandelbrotParameters -> Float -> Float -> Int -> Int -> ComplexNumber
 toComplex parameters xFactor yFactor y x =
     let
-        r =
+        re =
             toFloat x * xFactor + parameters.reMin
 
-        i =
+        im =
             toFloat y * yFactor + parameters.imMin
     in
-    { r = r, i = i }
+    { re = re, im = im }
