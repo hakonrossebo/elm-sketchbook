@@ -82,6 +82,8 @@ init =
             { title = "Mandelbrot"
             , markdown = """
 Mandelbrot example. To avoid too many pixels, a fixed resolution is used.
+
+You can click in the image to zoom the fractal.
             """
             }
 

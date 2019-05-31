@@ -1,10 +1,10 @@
 # Elm Sketchbook
 
-**Quickstart: Clone this project, run npm/yarn install, Install Elm and start using npm/yarn start*
+\*_Quickstart: Clone this project, run npm/yarn install, Install Elm and start using npm/yarn start_
 
 Whether you are a new developer to Elm or an experienced Elm developer, the Elm Sketchbook can unblock you from setting up the boilerplate for proof of concepts. It also provides examples on how to do various tasks.
 
-Elm-Sketchbook was created when I found myself delayed or aborting the project when having to create and setup a new app when trying out something new.
+Elm-Sketchbook was created when I found myself not going further when having to create and setup a new app when I just wanted to try out something new.
 With Elm-Sketchbook, you always have a new blank sketch ready that works as a separate app. All sketches can then be navigated with the menu.
 
 This sketchbook comes with 10+ empty sketches and several examples / templates to get you started with Elm or to just experiment with the examples.
