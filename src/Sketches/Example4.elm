@@ -1,4 +1,4 @@
-module Sketches.Example4 exposing (Model, Msg, addComplex, init, iterateComplexMandelbrot, magnitudeComplex, subscriptions, update, view)
+module Sketches.Example4 exposing (Model, Msg, addComplex, init, iterateComplexMandelbrot, subscriptions, update, view)
 
 import Array exposing (Array)
 import Browser.Dom as Dom
@@ -94,7 +94,7 @@ You can click in the image to zoom the fractal.
             , reMax = 2.0
             , imMin = -2.0
             , imMax = 2.0
-            , maxMandelbrotIterations = 250
+            , maxMandelbrotIterations = 150
             }
     in
     ( { info = info
@@ -160,43 +160,8 @@ update msg model =
             let
                 pixels =
                     calculateMandelbrot model.mandelbrotParameters
-
-                histogram =
-                    pixels
-                        |> Dict.toList
-                        |> List.map (\( k, v ) -> v)
-                        |> List.foldl createHistogram Dict.empty
-                        |> Dict.toList
-
-                histogramTotalIterations =
-                    histogram
-                        |> List.map (\( _, it ) -> it)
-                        |> List.sum
-
-                iterationPercents =
-                    let
-                        calcHistogramPercents : ( Int, Int ) -> ( Int, List ( Int, Float ) ) -> ( Int, List ( Int, Float ) )
-                        calcHistogramPercents ( currentIterations, currentCount ) ( accCount, accList ) =
-                            let
-                                runningTotal =
-                                    accCount + currentCount
-
-                                percents =
-                                    toFloat runningTotal
-                                        / toFloat histogramTotalIterations
-
-                                -- |> Debug.log "Percents:"
-                                updatedList =
-                                    ( currentIterations, percents ) :: accList
-                            in
-                            ( runningTotal, updatedList )
-                    in
-                    histogram
-                        |> List.foldl calcHistogramPercents ( 0, [] )
-                        |> (\( _, lst ) -> lst)
-                        |> Dict.fromList
             in
-            ( { model | sketchDrawingArea = Just element, pixels = pixels, colorPercents = iterationPercents }, Cmd.none )
+            ( { model | sketchDrawingArea = Just element, pixels = pixels }, Cmd.none )
 
         OnError error ->
             ( { model | error = Just error }, Cmd.none )
@@ -384,7 +349,6 @@ viewPixel : MandelbrotParameters -> Dict Point Int -> Dict Int Float -> Int -> I
 viewPixel parameters pixels percents xPixelSize yPixelSize currentY currentX =
     let
         colorShade itr =
-            -- 1 - toFloat itr / maxMandelbrotIterations
             1 - (1 - toFloat itr / 22)
 
         rgbColor =
@@ -396,69 +360,6 @@ viewPixel parameters pixels percents xPixelSize yPixelSize currentY currentX =
                     rgb 0.0 0.0 (colorShade iterations)
                         |> toCssString
 
-        -- rgbColorHist =
-        --     case Dict.get ( currentX, currentY ) pixels of
-        --         Nothing ->
-        --             "black"
-        --         Just iterations ->
-        --             let
-        --                 currentPercent =
-        --                     case Dict.get iterations percents of
-        --                         Nothing ->
-        --                             1
-        --                         Just p ->
-        --                             p
-        --                 rStart =
-        --                     0.0
-        --                 rChange =
-        --                     0.1
-        --                 gStart =
-        --                     0.0
-        --                 gChange =
-        --                     0.1
-        --                 bStart =
-        --                     0.1
-        --                 bChange =
-        --                     0.9
-        --                 re =
-        --                     rStart + rChange * currentPercent
-        --                 g =
-        --                     gStart + gChange * currentPercent
-        --                 b =
-        --                     bStart + bChange * currentPercent
-        --             in
-        --             -- hsl h s l
-        --             rgb re g b
-        --                 |> toCssString
-        -- hslColor =
-        --     case Dict.get ( currentX, currentY ) pixels of
-        --         Nothing ->
-        --             hsl 0 0 0
-        --                 |> toCssString
-        --         Just iterations ->
-        --             let
-        --                 currentPercent =
-        --                     case Dict.get iterations percents of
-        --                         Nothing ->
-        --                             0
-        --                         Just p ->
-        --                             -- Debug.log "P" p
-        --                             p
-        --                 h =
-        --                     -- 0.5 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1)
-        --                     0.7 - (0.7 - linearInterpolation currentPercent currentPercent (remainderBy (iterations + 1) 1))
-        --                 -- 1 - currentPercent
-        --                 -- 0.2
-        --                 s =
-        --                     0.6
-        --                 l =
-        --                     if iterations == 0 then
-        --                         0
-        --                     else
-        --                         0.5
-        --             in
-        --             hsl h s l
-        --                 |> toCssString
         xPixelSizeString =
             String.fromInt xPixelSize ++ "px"
 
@@ -469,9 +370,6 @@ viewPixel parameters pixels percents xPixelSize yPixelSize currentY currentX =
         [ style "width" xPixelSizeString
         , style "height" yPixelSizeString
         , style "background-color" rgbColor
-
-        -- , style "background-color" hslColor
-        -- , style "background-color" rgbColorHist
         , style "display" "inline-block"
         ]
         []
@@ -530,9 +428,9 @@ addComplex a b =
     }
 
 
-magnitudeComplex : ComplexNumber -> Float
-magnitudeComplex c =
-    sqrt (c.re * c.re + c.im * c.im)
+magnitudeComplexNoSqrt : ComplexNumber -> Float
+magnitudeComplexNoSqrt c =
+    c.re * c.re + c.im * c.im
 
 
 squareComplex : ComplexNumber -> ComplexNumber
@@ -547,7 +445,7 @@ iterateComplexMandelbrot prevComplex currentComplex maxIterations currentIterati
     if currentIteration > maxIterations then
         0
 
-    else if magnitudeComplex currentComplex > 2 then
+    else if magnitudeComplexNoSqrt currentComplex > 4 then
         currentIteration
 
     else
