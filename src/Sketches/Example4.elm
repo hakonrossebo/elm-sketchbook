@@ -91,7 +91,7 @@ You can click in the image to zoom the fractal.
             { xResolution = 260
             , yResolution = 200
             , reMin = -2.0
-            , reMax = 2.0
+            , reMax = 1.0
             , imMin = -2.0
             , imMax = 2.0
             , maxMandelbrotIterations = 150
@@ -306,10 +306,10 @@ viewSketchDrawingContent model =
             Just element ->
                 let
                     windowWidth =
-                        floor (element.element.width / toFloat model.mandelbrotParameters.xResolution)
+                        round (element.element.width / toFloat model.mandelbrotParameters.xResolution)
 
                     windowHeight =
-                        floor (element.element.height / toFloat model.mandelbrotParameters.yResolution)
+                        round (element.element.height / toFloat model.mandelbrotParameters.yResolution)
                 in
                 [ viewMandelbrot model.mandelbrotParameters windowWidth windowHeight model.pixels model.colorPercents ]
 
